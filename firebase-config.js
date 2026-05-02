@@ -1,7 +1,6 @@
 // firebase-config.js
-// Подключаем Firebase SDK через CDN (тег script уже будет в HTML)
+// Используем COMPAT-версию (без import, только глобальные переменные)
 
-// Твои данные из консоли Firebase (я их скопировал и поправил)
 const firebaseConfig = {
   apiKey: "AIzaSyAnwfcKCVB35c4ReExi3KK1fH2b3hPeJSE",
   authDomain: "auraengineonline.firebaseapp.com",
@@ -12,9 +11,9 @@ const firebaseConfig = {
   measurementId: "G-4C30YKMBZR"
 };
 
-// Инициализируем Firebase
+// Инициализация Firebase (глобальные объекты firebase, firebase.firestore)
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-console.log("🔥 Firebase подключён");
+console.log("✅ Firebase подключён, db и storage доступны");
