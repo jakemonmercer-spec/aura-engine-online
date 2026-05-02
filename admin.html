@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Aura Admin — проверка Firebase</title>
+    <!-- Подключаем Firebase SDK (script tag) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <!-- Подключаем наш файл с конфигом -->
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <h1>Админ-панель Aura</h1>
+    <button onclick="testFirebase()">Проверить Firebase</button>
+    <pre id="output"></pre>
+
+    <script>
+        async function testFirebase() {
+            const output = document.getElementById('output');
+            output.innerText = "Проверка...";
+            try {
+                // Просто попробуем записать тестовые данные в коллекцию "test"
+                await db.collection("test").add({
+                    message: "Привет из Aura Admin!",
+                    timestamp: new Date()
+                });
+                output.innerText = "✅ Firebase работает! Запись добавлена в коллекцию 'test'.\nПерейдите в консоль Firebase -> Firestore, чтобы увидеть её.";
+            } catch (error) {
+                output.innerText = "❌ Ошибка: " + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
