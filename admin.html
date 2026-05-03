@@ -32,32 +32,38 @@
     <div id="coursesList"></div>
 
     <script>
-        // ⚠️ ВСТАВЬТЕ ВАШ ТОКЕН (сгенерируйте fine-grained с доступом на запись к содержимому)
-        const GITHUB_TOKEN = 'ВАШ_FINE_GRAINED_TOKEN_ЗДЕСЬ';
+        // ========== КОНФИГУРАЦИЯ ==========
+        // ВСТАВЬТЕ СВОЙ ТОКЕН (fine-grained или classic, права repo + contents write)
+        const GITHUB_TOKEN = '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'; // замените на актуальный
         const REPO_OWNER = 'jakemonmercer-spec';
         const REPO_NAME = 'aura-engine-online';
         const BRANCH = 'main';
 
-        // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
-        function escapeHtml(str) {
-            return str?.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')) || '';
+        // Вспомогательная функция: удалить все не-ASCII символы, оставить латиницу, цифры, точку, дефис, подчёркивание
+        function toAsciiFilename(str) {
+            return str.replace(/[^a-zA-Z0-9._-]/g, '_');
         }
 
-        // Получить SHA файла, если он уже существует
+        // Получить SHA файла (если существует)
         async function getFileSha(path) {
             const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
             const res = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
+                headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
             });
             if (res.status === 404) return null;
-            if (!res.ok) throw new Error(await res.text());
+            if (!res.ok) {
+                const err = await res.text();
+                throw new Error(`GitHub get SHA error: ${res.status} ${err.substring(0,100)}`);
+            }
             const data = await res.json();
             return data.sha;
         }
 
-        // Загрузить файл на GitHub (с автоматическим получением SHA для обновления)
+        // Загрузить файл на GitHub
         async function uploadToGitHub(file, folder) {
-            const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+            const originalName = file.name;
+            const safeName = toAsciiFilename(originalName);
+            const filename = `${Date.now()}_${safeName}`;
             const filePath = `${folder}/${filename}`;
             const contentBase64 = await new Promise((resolve) => {
                 const reader = new FileReader();
@@ -77,30 +83,30 @@
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Authorization': `token ${GITHUB_TOKEN}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(body)
             });
 
             if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.message);
+                const errData = await response.json();
+                throw new Error(errData.message || 'Upload failed');
             }
             const data = await response.json();
             const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${filePath}`;
             return { rawUrl, path: filePath };
         }
 
-        // Удалить файл с GitHub (требуется SHA)
+        // Удалить файл с GitHub
         async function deleteFromGitHub(path) {
             const sha = await getFileSha(path);
-            if (!sha) return; // файла нет — ничего не делаем
+            if (!sha) return;
             const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
             const response = await fetch(url, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Authorization': `token ${GITHUB_TOKEN}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -115,7 +121,7 @@
             }
         }
 
-        // === ЗАГРУЗКА СПИСКА КУРСОВ ИЗ FIRESTORE ===
+        // Загрузить список курсов из Firestore
         async function loadCourses() {
             const snapshot = await db.collection('courses').orderBy('createdAt', 'desc').get();
             const container = document.getElementById('coursesList');
@@ -140,7 +146,7 @@
             });
         }
 
-        // === ДОБАВЛЕНИЕ КУРСА ===
+        // Добавить курс
         async function addCourse(event) {
             const btn = event.target;
             const title = document.getElementById('title').value.trim();
@@ -182,7 +188,7 @@
             }
         }
 
-        // === УДАЛЕНИЕ КУРСА (и файлов с GitHub) ===
+        // Удалить курс и файлы
         async function deleteCourse(id, imagePath, archivePath) {
             if (!confirm("Удалить курс? Файлы будут удалены из репозитория.")) return;
             try {
@@ -196,7 +202,10 @@
             }
         }
 
-        // ЗАПУСК
+        function escapeHtml(str) {
+            return str?.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')) || '';
+        }
+
         loadCourses();
     </script>
 </body>
