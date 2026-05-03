@@ -1,132 +1,81 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aura Studio — Управление курсами (Firebase)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Firebase SDK (Compat) -->
+    <title>Aura Admin – управление курсами</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
     <style>
-        body { background: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; }
-        .glass-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
-        .btn-primary { background: linear-gradient(135deg, #4f46e5, #7c3aed); transition: all 0.3s; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px #4f46e5; }
-        .course-card { transition: all 0.3s; }
-        .course-card:hover { transform: translateY(-5px); box-shadow: 0 20px 30px -15px rgba(79,70,229,0.4); }
+        body { font-family: system-ui; background: #0f172a; color: white; padding: 2rem; max-width: 600px; margin: 0 auto; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0; border-radius: 8px; border: none; }
+        button { background: #4f46e5; color: white; padding: 10px 20px; border: none; border-radius: 30px; cursor: pointer; margin-top: 10px; }
+        pre { background: #1e293b; padding: 10px; border-radius: 8px; }
+        .course { background: #1e293b; margin: 15px 0; padding: 15px; border-radius: 12px; }
     </style>
 </head>
-<body class="p-6">
-    <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-4xl font-black"><i class="fa-solid fa-crown text-indigo-500 mr-3"></i>Aura Studio Admin</h1>
-            <a href="index.html" class="text-slate-400 hover:text-white"><i class="fa-solid fa-home mr-2"></i>На сайт</a>
-        </div>
+<body>
+    <h2>➕ Добавить курс</h2>
+    <input type="text" id="title" placeholder="Название курса">
+    <input type="text" id="author" placeholder="Автор">
+    <textarea id="desc" placeholder="Краткое описание" rows="2"></textarea>
+    <input type="text" id="archiveUrl" placeholder="Прямая ссылка на ZIP/.aura архив">
+    <button onclick="addCourse()">Опубликовать</button>
+    <pre id="log"></pre>
 
-        <!-- Форма добавления/редактирования курса -->
-        <div class="glass-card rounded-2xl p-6 mb-10">
-            <h2 class="text-2xl font-bold mb-4"><i class="fa-solid fa-plus-circle mr-2 text-indigo-400"></i>Новый курс</h2>
-            <input type="text" id="courseTitle" placeholder="Название курса" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 mb-3 text-white">
-            <input type="text" id="courseAuthor" placeholder="Автор" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 mb-3 text-white">
-            <textarea id="courseDesc" placeholder="Описание курса" rows="2" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 mb-3 text-white"></textarea>
-            <input type="file" id="courseImage" accept="image/*" class="mb-3 text-slate-300">
-            <button onclick="addCourse()" class="btn-primary px-6 py-3 rounded-xl font-bold w-full"><i class="fa-solid fa-cloud-upload-alt mr-2"></i>Опубликовать курс</button>
-        </div>
- 
-        <!-- Список курсов (загружается из Firestore) -->
-        <h2 class="text-2xl font-bold mb-4"><i class="fa-solid fa-list mr-2 text-indigo-400"></i>Все курсы в базе</h2>
-        <div id="coursesList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-    </div>
+    <h2>📚 Список курсов</h2>
+    <div id="coursesList"></div>
 
     <script>
-        let editingCourseId = null; // для будущего редактирования
-        const coursesListDiv = document.getElementById('coursesList');
-
-        // Загрузка курсов из Firestore
         async function loadCourses() {
             const snapshot = await db.collection('courses').orderBy('createdAt', 'desc').get();
-            coursesListDiv.innerHTML = '';
+            const container = document.getElementById('coursesList');
+            container.innerHTML = '';
             snapshot.forEach(doc => {
                 const c = doc.data();
-                coursesListDiv.innerHTML += `
-                    <div class="course-card glass-card rounded-xl overflow-hidden">
-                        <img src="${c.imageUrl || 'https://placehold.co/600x400?text=No+Image'}" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                            <h3 class="text-xl font-bold">${escapeHtml(c.title)}</h3>
-                            <p class="text-slate-400 text-sm">${c.author}</p>
-                            <p class="text-slate-300 text-sm mt-2 line-clamp-2">${c.description || ''}</p>
-                            <div class="flex justify-between items-center mt-4">
-                                <span class="text-xs text-indigo-300">${new Date(c.createdAt?.toDate()).toLocaleDateString()}</span>
-                                <button onclick="deleteCourse('${doc.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash-alt"></i> Удалить</button>
-                            </div>
-                        </div>
+                container.innerHTML += `
+                    <div class="course">
+                        <strong>${escapeHtml(c.title)}</strong> — ${escapeHtml(c.author)}<br>
+                        ${c.description ? escapeHtml(c.description) + '<br>' : ''}
+                        <a href="${c.archiveUrl}" target="_blank" style="color:#a5b4fc">⬇️ Скачать курс</a><br>
+                        <button onclick="deleteCourse('${doc.id}')" style="background:#ef4444; margin-top:8px;">🗑️ Удалить</button>
                     </div>
                 `;
             });
         }
 
-        // Добавление курса (с загрузкой картинки в Storage)
         async function addCourse() {
-            const title = document.getElementById('courseTitle').value.trim();
-            const author = document.getElementById('courseAuthor').value.trim();
-            const description = document.getElementById('courseDesc').value.trim();
-            const imageFile = document.getElementById('courseImage').files[0];
-            if (!title || !author) {
-                alert("Заполните название и автора");
+            const title = document.getElementById('title').value.trim();
+            const author = document.getElementById('author').value.trim();
+            const description = document.getElementById('desc').value.trim();
+            const archiveUrl = document.getElementById('archiveUrl').value.trim();
+            if (!title || !author || !archiveUrl) {
+                alert("Заполните название, автора и ссылку на архив");
                 return;
             }
-            // Показываем индикатор
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-pulse"></i> Загрузка...';
-            btn.disabled = true;
+            const log = document.getElementById('log');
+            log.innerText = "Добавление...";
             try {
-                let imageUrl = '';
-                if (imageFile) {
-                    const storageRef = storage.ref(`covers/${Date.now()}_${imageFile.name}`);
-                    const uploadTask = await storageRef.put(imageFile);
-                    imageUrl = await uploadTask.ref.getDownloadURL();
-                }
                 await db.collection('courses').add({
-                    title,
-                    author,
-                    description,
-                    imageUrl,
+                    title, author, description, archiveUrl,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                alert('Курс добавлен!');
-                document.getElementById('courseTitle').value = '';
-                document.getElementById('courseAuthor').value = '';
-                document.getElementById('courseDesc').value = '';
-                document.getElementById('courseImage').value = '';
-                loadCourses();
-            } catch (err) {
-                alert('Ошибка: ' + err.message);
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                log.innerText = "✅ Курс добавлен! Страница обновится через 2 секунды.";
+                setTimeout(() => location.reload(), 2000);
+            } catch(e) {
+                log.innerText = "❌ Ошибка: " + e.message;
             }
         }
 
-        // Удаление курса
-        async function deleteCourse(docId) {
-            if (!confirm('Удалить курс навсегда?')) return;
-            await db.collection('courses').doc(docId).delete();
+        async function deleteCourse(id) {
+            if (!confirm("Удалить курс?")) return;
+            await db.collection('courses').doc(id).delete();
             loadCourses();
         }
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
         }
 
         loadCourses();
