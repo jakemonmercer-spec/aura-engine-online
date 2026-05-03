@@ -31,7 +31,7 @@
     <div id="coursesList"></div>
 
     <script>
-        // ✅ ВСТАВЬ СВОЙ НОВЫЙ ТОКЕН (СОЗДАЙ НА GitHub)
+        // ✅ ТВОЙ РАБОЧИЙ ТОКЕН
         const GITHUB_TOKEN = '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';
         const REPO_OWNER = 'jakemonmercer-spec';
         const REPO_NAME = 'aura-engine-online';
@@ -62,7 +62,7 @@
             });
         }
 
-        // Загрузить файл на GitHub через API
+        // Загрузить файл на GitHub через API (с правильным заголовком)
         async function uploadToGitHub(file, folder) {
             const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
             const filePath = `${folder}/${filename}`;
@@ -75,7 +75,7 @@
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Authorization': `token ${GITHUB_TOKEN}`, // <--- ПРАВИЛЬНЫЙ ЗАГОЛОВОК
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
