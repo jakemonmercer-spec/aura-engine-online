@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURA ONLINE — Autonomous Learning Ecosystem</title>
     
-    <!-- ПОДКЛЮЧЕНИЕ СТИЛЕЙ: Должны лежать в корне GitHub рядом с этим файлом -->
+    <!-- СИНХРОНИЗАЦИЯ СТИЛЕЙ -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="index.css">
     
@@ -13,16 +13,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- FIREBASE SDK (COMPAT) — Критически важно для работы Auth и Firestore в браузере -->
+    <!-- FIREBASE SDK (COMPAT) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <script>
-        /**
-         * ГЛОБАЛЬНАЯ КОНФИГУРАЦИЯ ОБЛАКА
-         * Эти данные позволяют твоему app.js общаться с базой без Node.js
-         */
         const firebaseConfig = {
             apiKey: "AIzaSyAnwcfKCVB35c4ReExi3KKIfH2b3HpEJSE",
             authDomain: "auraengineonline.firebaseapp.com",
@@ -33,108 +29,58 @@
             measurementId: "G-4C30YKM8ZF"
         };
 
-        // Инициализация Firebase для глобального доступа в app.js
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         window.auraCloudDB = firebase.firestore();
         window.firebase = firebase;
 
-        // Конфигурация Tailwind для переключения Dark/Light тем
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        aura: {
-                            primary: '#4f46e5',
-                            indigo: '#6366f1',
-                            accent: '#f43f5e',
-                            dark: '#020617'
-                        }
-                    }
-                }
-            }
+            theme: { extend: { colors: { aura: { primary: '#4f46e5', indigo: '#6366f1', accent: '#f43f5e', dark: '#020617' } } } }
         }
     </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;700;900&display=swap');
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            transition: background-color 0.5s ease, color 0.5s ease;
-            overflow-x: hidden;
-        }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; overflow-x: hidden; }
         .space-font { font-family: 'Orbitron', sans-serif; }
-        
-        /* Визуальная "жирность" сетки */
-        .aura-grid-pattern {
-            background-size: 50px 50px;
-            background-image: 
-                linear-gradient(to right, rgba(79, 70, 229, 0.05) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(79, 70, 229, 0.05) 1px, transparent 1px);
+        .aura-grid-bg {
+            background-size: 60px 60px;
+            background-image: linear-gradient(to right, rgba(79, 70, 229, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(79, 70, 229, 0.05) 1px, transparent 1px);
         }
-
-        .glass-panel {
+        .glass-header {
             background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.05);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
-        .dark .glass-panel {
+        .dark .glass-header {
             background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-
-        /* Анимация XP-короны */
-        .xp-glow {
-            filter: drop-shadow(0 0 10px rgba(244, 63, 94, 0.5));
-            animation: pulse-glow 2s infinite;
-        }
-        @keyframes pulse-glow {
-            0% { opacity: 0.8; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
-            100% { opacity: 0.8; transform: scale(1); }
-        }
-        
-        /* Кастомный скроллбар */
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
-        .dark ::-webkit-scrollbar-thumb { background: #1e293b; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-aura-dark dark:text-slate-100 min-h-screen aura-grid-pattern">
+<body class="bg-slate-50 text-slate-900 dark:bg-aura-dark dark:text-slate-100 min-h-screen aura-grid-bg">
 
     <!-- =========================================================
-         HEADER: NAVIGATION & ACCOUNT
+         HEADER: UNITY CONTROL
          ========================================================= -->
-    <header class="h-24 sticky top-0 z-[100] border-b border-slate-200 dark:border-white/5 glass-panel">
+    <header class="h-24 sticky top-0 z-[100] glass-header">
         <div class="max-w-7xl mx-auto h-full px-8 flex justify-between items-center">
-            <!-- Брендинг -->
-            <div class="flex items-center gap-4 cursor-pointer" onclick="location.reload()">
+            <div class="flex items-center gap-4 cursor-pointer" onclick="location.href='index.html'">
                 <div class="w-12 h-12 bg-aura-primary rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-indigo-500/40">
                     <i class="fa-solid fa-atom text-2xl"></i>
                 </div>
-                <div>
-                    <h1 class="text-3xl font-black tracking-tighter italic space-font text-aura-primary dark:text-white leading-none">AURA.</h1>
-                    <p class="text-[8px] font-black uppercase tracking-[0.4em] text-slate-400 mt-1">Online Hub</p>
-                </div>
+                <h1 class="text-3xl font-black tracking-tighter italic space-font text-aura-primary dark:text-white leading-none">AURA.</h1>
             </div>
 
-            <!-- Контролы -->
             <div class="flex items-center gap-6">
-                <!-- Master Theme Toggle -->
-                <button onclick="toggleTheme()" class="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white/10 transition-all border border-slate-200 dark:border-white/10">
+                <button onclick="toggleTheme()" class="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-all border border-slate-200 dark:border-white/10">
                     <i id="theme-icon" class="fa-solid fa-moon text-xl"></i>
                 </button>
                 
-                <!-- Контейнер авторизации (Заполняется через app.js) -->
                 <div id="auth-btn-container" class="animate-fade">
-                    <button onclick="AuraSocial.login()" class="bg-aura-primary text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all">
-                        Войти в Hub
+                    <button onclick="AuraSocial.login()" class="bg-aura-primary text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl hover:scale-105 transition-all">
+                        Войти в Хаб
                     </button>
                 </div>
             </div>
@@ -142,177 +88,76 @@
     </header>
 
     <!-- =========================================================
-         LANDING VIEW: THE HUB
+         HERO SECTION: LANDING
          ========================================================= -->
-    <div id="landing-section" class="max-w-7xl mx-auto px-8 py-20 lg:py-32">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-            
-            <!-- Основной призыв -->
-            <div class="lg:col-span-7 space-y-12 animate-slideUp">
-                <div class="space-y-6">
-                    <div class="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-indigo-500/10 text-aura-indigo text-[10px] font-black uppercase tracking-[0.3em]">
-                        <span class="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></span> Global Online Ecosystem
-                    </div>
-                    <h2 class="text-7xl md:text-8xl font-black tracking-tighter leading-[0.85] dark:text-white">
-                        Знания <br> <span class="text-aura-primary italic">синхронны.</span>
-                    </h2>
-                    <p class="text-2xl text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed font-medium">
-                        Добро пожаловать в онлайн-центр Aura. Здесь ты найдешь мировые рейтинги, свой профиль и сможешь ознакомиться с библиотекой перед загрузкой в Desktop Pro.
-                    </p>
-                </div>
-
-                <div class="flex flex-wrap gap-6">
-                    <button onclick="launchMarket()" class="bg-aura-primary text-white px-12 py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-500/40 hover:bg-indigo-700 transition-all">
-                        Открыть Магазин
-                    </button>
-                    <a href="https://github.com/jakemonmercer-spec/aura-engine-online" target="_blank" class="px-12 py-6 rounded-[2.5rem] border-2 border-slate-200 dark:border-white/10 font-black text-xs uppercase tracking-widest hover:bg-white/5 transition-all flex items-center gap-3">
-                        <i class="fa-brands fa-github text-xl"></i> Repository
-                    </a>
-                </div>
-            </div>
-
-            <!-- Глобальный лидерборд (XP) -->
-            <div class="lg:col-span-5 animate-fade">
-                <div class="glass-panel p-10 rounded-[4rem] border border-white/20 relative overflow-hidden">
-                    <div class="flex justify-between items-center mb-10">
-                        <h3 class="text-2xl font-black uppercase tracking-tighter italic">Student Ranking</h3>
-                        <div class="w-10 h-10 bg-gradient-to-tr from-aura-primary to-aura-accent rounded-xl flex items-center justify-center text-white shadow-lg xp-glow">
-                            <i class="fa-solid fa-crown"></i>
-                        </div>
-                    </div>
-                    
-                    <!-- Контейнер для JS -->
-                    <div id="leaderboard-container" class="space-y-4">
-                        <div class="flex justify-center py-20 opacity-20"><i class="fa-solid fa-spinner fa-spin text-4xl"></i></div>
-                    </div>
-
-                    <!-- Декор -->
-                    <div class="absolute -right-10 -bottom-10 opacity-5 dark:opacity-10 pointer-events-none">
-                        <i class="fa-solid fa-medal text-[15rem]"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- =========================================================
-         APP VIEW: THE CLOUD MARKET
-         ========================================================= -->
-    <div id="app-section" class="hidden animate-fade">
-        <div class="max-w-7xl mx-auto px-8 pt-12 flex justify-between items-end border-b dark:border-white/5 pb-10 mb-16">
-            <div>
-                <h3 class="text-6xl font-black tracking-tighter italic">Courses.</h3>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mt-3 opacity-60">Доступные облачные превью</p>
-            </div>
-            <button onclick="exitMarket()" class="bg-slate-200 dark:bg-white/5 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:text-aura-primary transition-all">
-                <i class="fa-solid fa-arrow-left mr-2"></i> Назад
-            </button>
-        </div>
+    <main class="max-w-7xl mx-auto px-8 py-20 lg:py-32 grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
         
-        <main id="market-grid" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-8 pb-40"></main>
-    </div>
-
-    <!-- =========================================================
-         PLAYER VIEW: INTERACTIVE PREVIEW
-         ========================================================= -->
-    <div id="player-view" class="hidden fixed inset-0 z-[200] bg-white dark:bg-aura-dark flex flex-col">
-        <nav class="h-20 border-b dark:border-white/5 flex justify-between items-center px-10 glass-panel shadow-2xl">
-            <button onclick="closeCourse()" class="font-black text-[10px] uppercase tracking-widest text-slate-500 hover:text-rose-500 transition-all">
-                <i class="fa-solid fa-circle-xmark mr-2 text-lg"></i> Выйти
-            </button>
-            <div class="text-center">
-                <h2 id="player-course-title" class="space-font font-black dark:text-white tracking-tighter uppercase text-xl leading-none">...</h2>
-                <p id="player-lesson-title" class="text-[8px] font-black uppercase text-aura-primary tracking-[0.4em] mt-1 italic">Preview Mode</p>
-            </div>
-            <div class="w-32 flex justify-end">
-                 <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[8px] font-black uppercase">
-                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Live
+        <!-- Описание системы -->
+        <div class="lg:col-span-7 space-y-12 animate-slideUp">
+            <div class="space-y-6">
+                <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-indigo-500/10 text-aura-indigo text-[10px] font-black uppercase tracking-[0.3em]">
+                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></span> Live Social Learning
                 </div>
+                <h2 class="text-7xl md:text-8xl font-black tracking-tighter leading-[0.85] dark:text-white">
+                    Знания. <br> <span class="text-aura-primary italic">Без границ.</span>
+                </h2>
+                <p class="text-2xl text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed font-medium">
+                    Центральный узел экосистемы Aura. Следи за своим прогрессом, изучай курсы онлайн и становись легендой в глобальном рейтинге.
+                </p>
             </div>
-        </nav>
-        
-        <div class="flex flex-1 overflow-hidden">
-            <!-- Сайдбар -->
-            <aside class="w-85 border-r dark:border-white/5 p-8 overflow-y-auto bg-slate-50/50 dark:bg-white/[0.01]">
-                <div id="lessons-list" class="space-y-4"></div>
-            </aside>
-            <!-- Контент -->
-            <main id="content-container" class="flex-1 relative bg-white dark:bg-aura-dark overflow-y-auto p-12 lg:p-24 shadow-inner">
-                <!-- Отрисовка AuraRenderer -->
-            </main>
-        </div>
-        
-        <!-- Action Bar -->
-        <div class="h-24 glass-panel border-t dark:border-white/5 px-10 flex justify-between items-center z-50">
-            <div id="lesson-status-tag" class="hidden px-6 py-2 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase border border-emerald-500/20">
-                <i class="fa-solid fa-circle-check mr-2"></i> Пройдено
-            </div>
-            <button id="complete-btn" class="bg-aura-primary text-white px-16 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-indigo-700 transition-all">
-                Завершить
-            </button>
-        </div>
-    </div>
 
-    <!-- =========================================================
-         QUIZ MODAL
-         ========================================================= -->
-    <div id="quiz-modal" class="hidden fixed inset-0 z-[300] bg-slate-950/95 backdrop-blur-xl flex items-center justify-center p-6">
-        <div class="bg-white dark:bg-slate-900 p-12 rounded-[4.5rem] max-w-2xl w-full shadow-2xl border dark:border-white/5 animate-slideUp">
-            <div class="text-center mb-12">
-                <h3 class="text-4xl font-black tracking-tighter italic leading-none mb-4 uppercase dark:text-white">Тестирование</h3>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Продемонстрируй прогресс и получи XP</p>
-            </div>
-            <div id="quiz-questions-container" class="max-h-[45vh] overflow-y-auto pr-4 custom-scrollbar"></div>
-            <div class="grid grid-cols-2 gap-6 mt-12">
-                <button onclick="closeQuiz()" class="py-5 rounded-3xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:bg-white/5 transition-all">Отмена</button>
-                <button onclick="validateQuiz()" class="bg-aura-primary py-5 rounded-3xl text-white font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-indigo-700 transition-all">Проверить</button>
+            <div class="flex flex-wrap gap-6">
+                <a href="market.html" class="bg-aura-primary text-white px-12 py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-500/40 hover:bg-indigo-700 transition-all block">
+                    Открыть Магазин
+                </a>
+                <a href="https://github.com/jakemonmercer-spec/aura-engine-online" class="px-12 py-6 rounded-[2.5rem] border-2 border-slate-200 dark:border-white/10 font-black text-xs uppercase tracking-widest hover:bg-white/5 transition-all flex items-center gap-3">
+                    <i class="fa-brands fa-github text-xl"></i> Repository
+                </a>
             </div>
         </div>
-    </div>
 
-    <!-- =========================================================
-         AI CHAT WIDGET
-         ========================================================= -->
-    <div class="fixed bottom-10 right-10 z-[150]">
-        <button onclick="toggleChat()" class="w-16 h-16 bg-aura-primary text-white rounded-3xl shadow-2xl flex items-center justify-center hover:scale-110 transition-all group">
-            <i class="fa-solid fa-robot text-2xl"></i>
-        </button>
-        <div id="ai-chat" class="hidden absolute bottom-20 right-0 w-96 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border dark:border-white/5 overflow-hidden animate-slideUp">
-            <div class="p-6 bg-slate-900 text-white flex justify-between items-center">
-                <span class="font-black text-[10px] uppercase tracking-widest">Aura Online Assistant</span>
-                <i class="fa-solid fa-chevron-down opacity-50 cursor-pointer" onclick="toggleChat()"></i>
-            </div>
-            <div id="chat-messages" class="h-80 overflow-y-auto p-6 space-y-4 text-sm font-medium"></div>
-            <div class="p-5 border-t dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
-                <div class="relative">
-                    <input type="text" id="chat-input" placeholder="Задай вопрос по модулю..." class="w-full p-4 pr-12 rounded-2xl bg-white dark:bg-slate-800 border-none outline-none shadow-inner dark:text-white">
-                    <button onclick="sendChatMessage()" class="absolute right-4 top-1/2 -translate-y-1/2 text-aura-primary hover:text-indigo-400 transition-colors">
-                        <i class="fa-solid fa-paper-plane text-xl"></i>
-                    </button>
+        <!-- Leaderboard (XP Хаб) -->
+        <div class="lg:col-span-5 animate-fade">
+            <div class="bg-white dark:bg-slate-900/50 p-10 rounded-[4rem] border border-slate-200 dark:border-white/5 shadow-2xl relative overflow-hidden">
+                <div class="flex justify-between items-center mb-10">
+                    <h3 class="text-2xl font-black uppercase tracking-tighter italic">Top Students</h3>
+                    <div class="w-12 h-12 bg-gradient-to-tr from-aura-primary to-rose-500 rounded-2xl flex items-center justify-center text-white shadow-xl">
+                        <i class="fa-solid fa-trophy text-xl"></i>
+                    </div>
+                </div>
+                
+                <!-- Контейнер для лидеров из app.js -->
+                <div id="leaderboard-container" class="space-y-4">
+                    <div class="flex justify-center py-20 opacity-20"><i class="fa-solid fa-spinner fa-spin text-4xl"></i></div>
+                </div>
+
+                <div class="absolute -right-12 -bottom-12 opacity-5 pointer-events-none">
+                    <i class="fa-solid fa-ranking-star text-[18rem]"></i>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- GLOBAL PAGE ACTIONS -->
-    <script>
-        function launchMarket() {
-            document.getElementById('landing-section').classList.add('hidden');
-            document.getElementById('app-section').classList.remove('hidden');
-            window.switchTab('market');
-            window.scrollTo(0,0);
-        }
-        function exitMarket() {
-            document.getElementById('app-section').classList.add('hidden');
-            document.getElementById('landing-section').classList.remove('hidden');
-            window.scrollTo(0,0);
-        }
-        function closeQuiz() {
-            document.getElementById('quiz-modal').classList.add('hidden');
-        }
-    </script>
+    <!-- Секция Промо -->
+    <section class="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-3 gap-8 pb-40">
+        <div class="p-10 rounded-[3rem] bg-white dark:bg-slate-900/30 border border-slate-100 dark:border-white/5 hover:border-aura-primary transition-all group">
+            <i class="fa-solid fa-shield-halved text-4xl text-aura-primary mb-6 block group-hover:scale-110 transition-transform"></i>
+            <h4 class="text-xl font-black uppercase tracking-tighter mb-4">Desktop Pro</h4>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Для тех, кому нужна полная автономность и работа без интернета. Скачай и забудь про лаги.</p>
+        </div>
+        <div class="p-10 rounded-[3rem] bg-white dark:bg-slate-900/30 border border-slate-100 dark:border-white/5 hover:border-aura-primary transition-all group">
+            <i class="fa-solid fa-bolt-lightning text-4xl text-yellow-500 mb-6 block group-hover:scale-110 transition-transform"></i>
+            <h4 class="text-xl font-black uppercase tracking-tighter mb-4">Cloud Speed</h4>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Мгновенный доступ к превью любого курса прямо из браузера. Никаких ожиданий.</p>
+        </div>
+        <div class="p-10 rounded-[3rem] bg-white dark:bg-slate-900/30 border border-slate-100 dark:border-white/5 hover:border-aura-primary transition-all group">
+            <i class="fa-solid fa-chart-line text-4xl text-emerald-500 mb-6 block group-hover:scale-110 transition-transform"></i>
+            <h4 class="text-xl font-black uppercase tracking-tighter mb-4">Global XP</h4>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Твои достижения сохраняются в общем реестре. Стань мастером и попади в ТОП.</p>
+        </div>
+    </section>
 
-    <!-- ПОДКЛЮЧЕНИЕ ГЛАВНОГО ЯДРА (Твой app.js v25.0) -->
+    <!-- ПОДКЛЮЧЕНИЕ МАСТЕР-ЯДРА -->
     <script src="app.js"></script>
 </body>
 </html>
