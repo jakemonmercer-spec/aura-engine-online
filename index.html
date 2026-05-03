@@ -1,46 +1,192 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <title>Aura Engine</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA Engine — Autonomous Learning Ecosystem</title>
+    
+    <!-- Стили из твоего проекта (Убедись, что index.css и style.css тоже лежат в гитхабе) -->
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Технологический стек -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- FIREBASE CLIENT SDK (Чтобы app.js видел базу без Node.js) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Конфигурация Firebase (Твои ключи из начала диалога)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnwcfKCVB35c4ReExi3KKIfH2b3HpEJSE",
+            authDomain: "auraengineonline.firebaseapp.com",
+            projectId: "auraengineonline",
+            storageBucket: "auraengineonline.firebasestorage.app",
+            messagingSenderId: "433967688454",
+            appId: "1:433967688454:web:61011b44105de083d68c87",
+            measurementId: "G-4C30YKM8ZF"
+        };
+
+        // Инициализация облака для app.js
+        firebase.initializeApp(firebaseConfig);
+        window.auraCloudDB = firebase.firestore();
+
+        // Настройка Tailwind
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        aura: {
+                            primary: '#4f46e5',
+                            indigo: '#6366f1',
+                            accent: '#f43f5e',
+                            dark: '#020617'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        body { background: #0f172a; color: #f1f5f9; font-family: system-ui; padding: 2rem; max-width: 1200px; margin: 0 auto; }
-        .hero { text-align: center; padding: 2rem; }
-        .course-card { background: #1e293b; border-radius: 1rem; padding: 1rem; margin: 1rem; display: inline-block; width: 300px; vertical-align: top; }
-        .btn { background: #4f46e5; padding: 0.5rem 1rem; border-radius: 2rem; color: white; text-decoration: none; display: inline-block; margin-top: 0.5rem; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;700;900&display=swap');
+        
+        /* Дополнительные стили для Лендинга */
+        .aura-hero-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.15) 0%, rgba(2, 6, 23, 0) 70%);
+        }
+        .space-font { font-family: 'Orbitron', sans-serif; }
     </style>
 </head>
-<body>
-    <div class="hero">
-        <h1>AURA ENGINE PRO</h1>
-        <p>Автономная платформа обучения с локальным AI</p>
-        <a href="admin.html" class="btn">🔐 Админ-панель</a>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen overflow-x-hidden transition-colors duration-500">
+
+    <!-- =========================================================
+         SECTION 1: LANDING PAGE (Видно всем при входе)
+         ========================================================= -->
+    <div id="landing-section" class="relative z-10">
+        <!-- Анимированный фон -->
+        <div class="fixed inset-0 aura-hero-gradient pointer-events-none"></div>
+
+        <!-- Навигация Лендинга -->
+        <nav class="max-w-7xl mx-auto px-8 h-24 flex justify-between items-center relative z-20">
+            <h1 class="text-3xl font-black tracking-tighter italic space-font text-aura-primary">AURA.</h1>
+            <div class="flex items-center gap-6">
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-white/10 transition-all">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+                <button onclick="launchPortal()" class="bg-aura-primary text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all">
+                    Войти в систему
+                </button>
+            </div>
+        </nav>
+
+        <!-- Герой Лендинга -->
+        <main class="max-w-5xl mx-auto pt-20 pb-32 px-8 text-center relative z-20">
+            <div class="inline-block px-4 py-1.5 rounded-full bg-indigo-500/10 text-aura-indigo text-[10px] font-black uppercase tracking-[0.3em] mb-8 animate-fade">
+                Autonomous Intelligent Learning
+            </div>
+            <h2 class="text-7xl md:text-8xl font-black tracking-tighter dark:text-white leading-[0.9] mb-10 animate-slideUp">
+                Учись без границ. <br> <span class="text-aura-primary italic">Даже оффлайн.</span>
+            </h2>
+            <p class="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-12 animate-fade">
+                Профессиональная LMS-система нового поколения. Создавай курсы в облаке, учись на компьютере без интернета.
+            </p>
+            
+            <div class="flex flex-col md:flex-row items-center justify-center gap-6 animate-slideUp">
+                <button onclick="launchPortal()" class="w-full md:w-auto bg-aura-primary text-white px-12 py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-indigo-700 transition-all">
+                    Открыть Online Market
+                </button>
+                <a href="https://github.com/твоё-имя/aura-engine/releases" class="w-full md:w-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-12 py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all">
+                    Скачать Desktop Pro
+                </a>
+            </div>
+        </main>
     </div>
-    <h2>📖 Курсы</h2>
-    <div id="coursesList"></div>
+
+    <!-- =========================================================
+         SECTION 2: CLOUD APP INTERFACE (Скрыт при входе)
+         ========================================================= -->
+    <div id="app-section" class="hidden animate-fade">
+        
+        <!-- Navbar Плеера -->
+        <header class="h-20 border-b border-slate-100 dark:border-slate-800 px-8 flex justify-between items-center sticky top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50">
+            <button onclick="exitPortal()" class="flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-aura-primary transition-all">
+                <i class="fa-solid fa-arrow-left"></i> На главную
+            </button>
+            
+            <div class="flex gap-4">
+                <button onclick="switchTab('market')" id="tab-market" class="px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all">Магазин</button>
+                <div class="w-px h-6 bg-slate-200 dark:bg-slate-800"></div>
+                <button onclick="toggleTheme()" class="text-slate-400 hover:text-aura-indigo"><i id="theme-icon-app" class="fa-solid fa-moon text-lg"></i></button>
+            </div>
+        </header>
+
+        <!-- Контейнеры для Market (Сюда app.js будет рендерить карточки из Firestore) -->
+        <main id="market-grid" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 p-12"></main>
+
+        <!-- Контейнер Плеера (Learning View) -->
+        <div id="player-view" class="hidden fixed inset-0 z-[60] bg-white dark:bg-slate-950 flex flex-col">
+            <nav class="h-20 border-b dark:border-slate-800 flex justify-between items-center px-8 bg-white dark:bg-slate-900">
+                <button onclick="closeCourse()" class="font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-aura-primary">
+                    <i class="fa-solid fa-times mr-2"></i> Закрыть превью
+                </button>
+                <h2 id="player-course-title" class="space-font font-black dark:text-white uppercase">...</h2>
+                <div class="w-20"></div>
+            </nav>
+            
+            <div class="flex flex-1 overflow-hidden">
+                <aside class="w-80 border-r dark:border-slate-800 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900/50">
+                    <div id="lessons-list" class="space-y-3"></div>
+                </aside>
+                <main id="content-container" class="flex-1 relative bg-slate-100 dark:bg-slate-950 overflow-y-auto p-12">
+                    <!-- Сюда app.js вставит Lego-блоки -->
+                </main>
+            </div>
+
+            <!-- Quiz Modal -->
+            <div id="quiz-modal" class="hidden fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
+                <div class="bg-white dark:bg-slate-900 p-12 rounded-[3rem] max-w-2xl w-full shadow-2xl">
+                    <div id="quiz-questions-container"></div>
+                    <button onclick="validateQuiz()" class="w-full mt-8 bg-aura-primary py-5 rounded-2xl text-white font-black uppercase tracking-widest">Проверить</button>
+                    <button onclick="closeQuiz()" class="w-full mt-4 text-slate-400 font-bold text-xs uppercase">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Оффлайн ИИ-Тьютор (Виджет) -->
+        <div class="fixed bottom-10 right-10 z-50">
+            <button onclick="toggleChat()" class="w-16 h-16 bg-aura-primary text-white rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 transition-all">
+                <i class="fa-solid fa-robot text-2xl"></i>
+            </button>
+            <div id="ai-chat" class="hidden absolute bottom-20 right-0 w-96 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border dark:border-slate-800 overflow-hidden">
+                <div class="p-6 bg-slate-900 text-white font-black text-xs uppercase tracking-widest">Aura AI Tutor</div>
+                <div id="chat-messages" class="h-80 overflow-y-auto p-6 space-y-4"></div>
+                <div class="p-4 border-t dark:border-slate-800">
+                    <input type="text" id="chat-input" placeholder="Спросите AI..." class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-800 outline-none">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ПОРТАЛА -->
     <script>
-        async function loadCourses() {
-            const snapshot = await db.collection('courses').orderBy('createdAt', 'desc').get();
-            const container = document.getElementById('coursesList');
-            if (snapshot.empty) { container.innerHTML = '<p>Пока нет курсов</p>'; return; }
-            container.innerHTML = '';
-            snapshot.forEach(doc => {
-                const c = doc.data();
-                container.innerHTML += `
-                    <div class="course-card">
-                        <h3>${escapeHtml(c.title)}</h3>
-                        <p>${escapeHtml(c.author)}</p>
-                        <p>${escapeHtml(c.description || '')}</p>
-                        <small>${new Date(c.createdAt?.toDate()).toLocaleDateString()}</small>
-                    </div>
-                `;
-            });
+        function launchPortal() {
+            document.getElementById('landing-section').classList.add('hidden');
+            document.getElementById('app-section').classList.remove('hidden');
+            // Вызываем функцию инициализации из app.js
+            if (typeof switchTab === 'function') switchTab('market');
         }
-        function escapeHtml(str) { return str?.replace(/[&<>]/g, m => m=='&'?'&amp;':(m=='<'?'&lt;':'&gt;')) || ''; }
-        loadCourses();
+
+        function exitPortal() {
+            document.getElementById('app-section').classList.add('hidden');
+            document.getElementById('landing-section').classList.remove('hidden');
+        }
     </script>
+
+    <!-- ПОДКЛЮЧЕНИЕ ГЛАВНОГО ЯДРА (Тот самый файл из VS Code) -->
+    <script src="app.js"></script>
 </body>
 </html>
