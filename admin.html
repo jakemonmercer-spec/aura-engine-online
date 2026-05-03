@@ -31,13 +31,12 @@
     <div id="coursesList"></div>
 
     <script>
-        // ✅ ТВОЙ РАБОЧИЙ ТОКЕН
-        const GITHUB_TOKEN = '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';
+        // ⚠️ ВСТАВЬТЕ СЮДА ВАШ НОВЫЙ ТОКЕН (FINE-GRAINED)
+        const GITHUB_TOKEN = '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';
         const REPO_OWNER = 'jakemonmercer-spec';
         const REPO_NAME = 'aura-engine-online';
         const BRANCH = 'main';
 
-        // Загрузить список курсов из Firestore
         async function loadCourses() {
             const snapshot = await db.collection('courses').orderBy('createdAt', 'desc').get();
             const container = document.getElementById('coursesList');
@@ -62,7 +61,6 @@
             });
         }
 
-        // Загрузить файл на GitHub через API (с правильным заголовком)
         async function uploadToGitHub(file, folder) {
             const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
             const filePath = `${folder}/${filename}`;
@@ -75,7 +73,8 @@
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`, // <--- ПРАВИЛЬНЫЙ ЗАГОЛОВОК
+                    // ПРАВИЛЬНЫЙ ЗАГОЛОВОК С BEARER
+                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -93,7 +92,6 @@
             return { rawUrl, path: filePath };
         }
 
-        // Добавление курса
         async function addCourse() {
             const title = document.getElementById('title').value.trim();
             const author = document.getElementById('author').value.trim();
@@ -134,21 +132,20 @@
             }
         }
 
-        // Удаление курса (удаляем файлы с GitHub)
         async function deleteCourse(docId, imagePath, archivePath) {
             if (!confirm("Удалить курс? Файлы будут удалены из репозитория.")) return;
             try {
                 if (archivePath) {
                     await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${archivePath}`, {
                         method: 'DELETE',
-                        headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                        headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ message: 'Delete archive', branch: BRANCH })
                     });
                 }
                 if (imagePath) {
                     await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${imagePath}`, {
                         method: 'DELETE',
-                        headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                        headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ message: 'Delete cover', branch: BRANCH })
                     });
                 }
