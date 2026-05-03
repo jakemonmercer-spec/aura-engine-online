@@ -1,188 +1,203 @@
-<script>
-const GITHUB_TOKEN = 'PASTE_NEW_VALID_TOKEN_HERE';
-const REPO_OWNER = 'jakemonmercer-spec';
-const REPO_NAME = 'aura-engine-online';
-const BRANCH = 'main';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Aura Admin – управление курсами</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        body { background: #0f172a; color: #f1f5f9; font-family: system-ui; padding: 2rem; max-width: 800px; margin: 0 auto; }
+        .card { background: #1e293b; border-radius: 2rem; padding: 2rem; margin-bottom: 2rem; }
+        input, textarea { width: 100%; padding: 0.5rem; margin: 0.5rem 0; border-radius: 0.5rem; background: #0f172a; color: white; border: 1px solid #334155; }
+        button { background: #4f46e5; padding: 0.5rem 1rem; border-radius: 2rem; border: none; color: white; cursor: pointer; }
+        .course { background: #1e293b; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
+        img { max-width: 100px; border-radius: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>Aura Studio Admin</h1>
+    <div class="card">
+        <h2>➕ Добавить курс</h2>
+        <input type="text" id="title" placeholder="Название курса">
+        <input type="text" id="author" placeholder="Автор">
+        <textarea id="desc" placeholder="Описание" rows="2"></textarea>
+        <div><label>Обложка (картинка)</label><input type="file" id="imageFile" accept="image/*"></div>
+        <div><label>Архив курса (.zip или .aura)</label><input type="file" id="archiveFile" accept=".zip,.aura"></div>
+        <button onclick="addCourse(event)">📤 Опубликовать</button>
+        <div id="log" style="margin-top:1rem; color:#a5b4fc;"></div>
+    </div>
 
-/* ---------------- LOAD ---------------- */
+    <h2>📚 Курсы</h2>
+    <div id="coursesList"></div>
 
-async function loadCourses() {
-    const snapshot = await db.collection('courses').orderBy('createdAt', 'desc').get();
-    const container = document.getElementById('coursesList');
-    container.innerHTML = '';
+    <script>
+        // ⚠️ ВСТАВЬТЕ ВАШ ТОКЕН (сгенерируйте fine-grained с доступом на запись к содержимому)
+        const GITHUB_TOKEN = 'ВАШ_FINE_GRAINED_TOKEN_ЗДЕСЬ';
+        const REPO_OWNER = 'jakemonmercer-spec';
+        const REPO_NAME = 'aura-engine-online';
+        const BRANCH = 'main';
 
-    snapshot.forEach(doc => {
-        const c = doc.data();
-
-        container.innerHTML += `
-            <div class="course">
-                <div style="display:flex; gap:1rem;">
-                    ${c.imageUrl ? `<img src="${c.imageUrl}">` : ''}
-                    <div style="flex:1">
-                        <h3>${escapeHtml(c.title)}</h3>
-                        <p>${escapeHtml(c.author)}</p>
-                        <p>${escapeHtml(c.description || '')}</p>
-                        <a href="${c.archiveUrl}" target="_blank">📥 Скачать</a>
-                        <br>
-                        <button onclick="deleteCourse('${doc.id}', '${c.imagePath || ''}', '${c.archivePath || ''}')">
-                            🗑️ Удалить
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-}
-
-/* ---------------- UPLOAD ---------------- */
-
-async function uploadToGitHub(file, folder) {
-    const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-    const filePath = `${folder}/${filename}`;
-
-    const contentBase64 = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.readAsDataURL(file);
-    });
-
-    const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
-
-    const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-            Authorization: `token ${GITHUB_TOKEN}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            message: `upload ${filename}`,
-            content: contentBase64,
-            branch: BRANCH
-        })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-        throw new Error(data.message || 'GitHub upload error');
-    }
-
-    return {
-        rawUrl: `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${filePath}`,
-        path: filePath
-    };
-}
-
-/* ---------------- ADD COURSE ---------------- */
-
-async function addCourse(event) {
-    const btn = event.target;
-
-    const title = document.getElementById('title').value.trim();
-    const author = document.getElementById('author').value.trim();
-    const description = document.getElementById('desc').value.trim();
-    const imageFile = document.getElementById('imageFile').files[0];
-    const archiveFile = document.getElementById('archiveFile').files[0];
-
-    if (!title || !author || !archiveFile) {
-        alert("Заполни поля");
-        return;
-    }
-
-    btn.disabled = true;
-
-    try {
-        let imageUrl = '', imagePath = '';
-
-        if (imageFile) {
-            const img = await uploadToGitHub(imageFile, 'covers');
-            imageUrl = img.rawUrl;
-            imagePath = img.path;
+        // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+        function escapeHtml(str) {
+            return str?.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')) || '';
         }
 
-        const archive = await uploadToGitHub(archiveFile, 'courses');
-
-        await db.collection('courses').add({
-            title,
-            author,
-            description,
-            imageUrl,
-            imagePath,
-            archiveUrl: archive.rawUrl,
-            archivePath: archive.path,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        location.reload();
-
-    } catch (e) {
-        alert("Ошибка: " + e.message);
-    } finally {
-        btn.disabled = false;
-    }
-}
-
-/* ---------------- DELETE (FIXED) ---------------- */
-
-async function getFileSha(path) {
-    const res = await fetch(
-        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
-        {
-            headers: { Authorization: `token ${GITHUB_TOKEN}` }
+        // Получить SHA файла, если он уже существует
+        async function getFileSha(path) {
+            const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
+            const res = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
+            });
+            if (res.status === 404) return null;
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            return data.sha;
         }
-    );
 
-    const data = await res.json();
-    return data.sha;
-}
+        // Загрузить файл на GitHub (с автоматическим получением SHA для обновления)
+        async function uploadToGitHub(file, folder) {
+            const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+            const filePath = `${folder}/${filename}`;
+            const contentBase64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
 
-async function deleteFromGitHub(path) {
-    const sha = await getFileSha(path);
-
-    const res = await fetch(
-        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
-        {
-            method: 'DELETE',
-            headers: {
-                Authorization: `token ${GITHUB_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: 'delete file',
-                sha,
+            const sha = await getFileSha(filePath);
+            const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
+            const body = {
+                message: `Upload ${filename}`,
+                content: contentBase64,
                 branch: BRANCH
-            })
+            };
+            if (sha) body.sha = sha;
+
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message);
+            }
+            const data = await response.json();
+            const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${filePath}`;
+            return { rawUrl, path: filePath };
         }
-    );
 
-    return res.json();
-}
+        // Удалить файл с GitHub (требуется SHA)
+        async function deleteFromGitHub(path) {
+            const sha = await getFileSha(path);
+            if (!sha) return; // файла нет — ничего не делаем
+            const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: 'Delete file',
+                    sha: sha,
+                    branch: BRANCH
+                })
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message);
+            }
+        }
 
-async function deleteCourse(id, imagePath, archivePath) {
-    if (!confirm("Удалить курс?")) return;
+        // === ЗАГРУЗКА СПИСКА КУРСОВ ИЗ FIRESTORE ===
+        async function loadCourses() {
+            const snapshot = await db.collection('courses').orderBy('createdAt', 'desc').get();
+            const container = document.getElementById('coursesList');
+            container.innerHTML = '';
+            snapshot.forEach(doc => {
+                const c = doc.data();
+                container.innerHTML += `
+                    <div class="course">
+                        <div style="display:flex; gap:1rem;">
+                            ${c.imageUrl ? `<img src="${c.imageUrl}" style="width:80px; height:80px; object-fit:cover;">` : ''}
+                            <div style="flex:1">
+                                <h3>${escapeHtml(c.title)}</h3>
+                                <p>${escapeHtml(c.author)}</p>
+                                <p>${escapeHtml(c.description || '')}</p>
+                                <a href="${c.archiveUrl}" target="_blank">📥 Скачать курс</a>
+                                <br><small>${new Date(c.createdAt?.toDate()).toLocaleString()}</small>
+                                <div><button onclick="deleteCourse('${doc.id}', '${c.imagePath || ''}', '${c.archivePath || ''}')">🗑️ Удалить</button></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
-    try {
-        if (archivePath) await deleteFromGitHub(archivePath);
-        if (imagePath) await deleteFromGitHub(imagePath);
+        // === ДОБАВЛЕНИЕ КУРСА ===
+        async function addCourse(event) {
+            const btn = event.target;
+            const title = document.getElementById('title').value.trim();
+            const author = document.getElementById('author').value.trim();
+            const description = document.getElementById('desc').value.trim();
+            const imageFile = document.getElementById('imageFile').files[0];
+            const archiveFile = document.getElementById('archiveFile').files[0];
 
-        await db.collection('courses').doc(id).delete();
+            if (!title || !author || !archiveFile) {
+                alert("Заполните название, автора и выберите архив курса");
+                return;
+            }
 
+            const log = document.getElementById('log');
+            log.innerText = "Загрузка на GitHub...";
+            btn.disabled = true;
+
+            try {
+                let imageUrl = '', imagePath = '';
+                if (imageFile) {
+                    const { rawUrl, path } = await uploadToGitHub(imageFile, 'covers');
+                    imageUrl = rawUrl;
+                    imagePath = path;
+                }
+                const { rawUrl: archiveUrl, path: archivePath } = await uploadToGitHub(archiveFile, 'courses');
+
+                await db.collection('courses').add({
+                    title, author, description,
+                    imageUrl, imagePath,
+                    archiveUrl, archivePath,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                log.innerText = "✅ Курс опубликован! Страница обновится.";
+                setTimeout(() => location.reload(), 2000);
+            } catch (err) {
+                log.innerText = "❌ Ошибка: " + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // === УДАЛЕНИЕ КУРСА (и файлов с GitHub) ===
+        async function deleteCourse(id, imagePath, archivePath) {
+            if (!confirm("Удалить курс? Файлы будут удалены из репозитория.")) return;
+            try {
+                if (archivePath) await deleteFromGitHub(archivePath);
+                if (imagePath) await deleteFromGitHub(imagePath);
+                await db.collection('courses').doc(id).delete();
+                loadCourses();
+                alert("Курс удалён");
+            } catch (err) {
+                alert("Ошибка удаления: " + err.message);
+            }
+        }
+
+        // ЗАПУСК
         loadCourses();
-
-    } catch (e) {
-        alert("Ошибка удаления: " + e.message);
-    }
-}
-
-/* ---------------- UTILS ---------------- */
-
-function escapeHtml(str) {
-    return str?.replace(/[&<>]/g, m =>
-        m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'
-    ) || '';
-}
-
-/* ---------------- INIT ---------------- */
-
-loadCourses();
-</script>
+    </script>
+</body>
+</html>
