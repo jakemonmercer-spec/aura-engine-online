@@ -74,7 +74,7 @@
                 method: 'PUT',
                 headers: {
                     // ПРАВИЛЬНЫЙ ЗАГОЛОВОК С BEARER
-                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Authorization': `token ${GITHUB_TOKEN}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -138,14 +138,14 @@
                 if (archivePath) {
                     await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${archivePath}`, {
                         method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                        headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ message: 'Delete archive', branch: BRANCH })
                     });
                 }
                 if (imagePath) {
                     await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${imagePath}`, {
                         method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                        headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ message: 'Delete cover', branch: BRANCH })
                     });
                 }
