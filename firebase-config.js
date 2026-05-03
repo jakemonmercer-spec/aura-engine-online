@@ -1,4 +1,3 @@
-// firebase-config.js
 const firebaseConfig = {
   apiKey: "AIzaSyAnwfcKCVB35c4ReExi3KK1fH2b3hPeJSE",
   authDomain: "auraengineonline.firebaseapp.com",
@@ -9,4 +8,4 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-// Storage не используется – все файлы через GitHub API
+// Storage не используется – файлы грузим через GitHub API
