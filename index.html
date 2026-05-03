@@ -2,16 +2,14 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Aura Engine — обучение офлайн</title>
+    <title>Aura Engine</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
     <style>
         body { background: #0f172a; color: #f1f5f9; font-family: system-ui; padding: 2rem; max-width: 1200px; margin: 0 auto; }
-        .hero { text-align: center; padding: 2rem 1rem; }
-        h1 { font-size: 3rem; background: linear-gradient(135deg, #4f46e5, #7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .hero { text-align: center; padding: 2rem; }
         .course-card { background: #1e293b; border-radius: 1rem; padding: 1rem; margin: 1rem; display: inline-block; width: 300px; vertical-align: top; }
-        img { width: 100%; height: 150px; object-fit: cover; border-radius: 0.5rem; }
         .btn { background: #4f46e5; padding: 0.5rem 1rem; border-radius: 2rem; color: white; text-decoration: none; display: inline-block; margin-top: 0.5rem; }
     </style>
 </head>
@@ -20,7 +18,6 @@
         <h1>AURA ENGINE PRO</h1>
         <p>Автономная платформа обучения с локальным AI</p>
         <a href="admin.html" class="btn">🔐 Админ-панель</a>
-        <a href="#" class="btn">📥 Скачать приложение (скоро)</a>
     </div>
     <h2>📖 Курсы</h2>
     <div id="coursesList"></div>
@@ -34,12 +31,10 @@
                 const c = doc.data();
                 container.innerHTML += `
                     <div class="course-card">
-                        ${c.imageUrl ? `<img src="${c.imageUrl}" onerror="this.src='https://placehold.co/600x400'">` : ''}
                         <h3>${escapeHtml(c.title)}</h3>
                         <p>${escapeHtml(c.author)}</p>
                         <p>${escapeHtml(c.description || '')}</p>
-                        <a href="${c.archiveUrl}" class="btn" download>⬇️ Скачать курс</a>
-                        <br><small>${new Date(c.createdAt?.toDate()).toLocaleDateString()}</small>
+                        <small>${new Date(c.createdAt?.toDate()).toLocaleDateString()}</small>
                     </div>
                 `;
             });
