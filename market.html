@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Market — Aura Engine Online</title>
+    
+    <!-- ПОДКЛЮЧЕНИЕ СТИЛЕЙ -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
+    
+    <!-- ТЕХНОЛОГИЧЕСКИЙ СТЕК -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- FIREBASE SDK (COMPAT) — Обязательно в каждом HTML онлайна -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnwcfKCVB35c4ReExi3KKIfH2b3HpEJSE",
+            authDomain: "auraengineonline.firebaseapp.com",
+            projectId: "auraengineonline",
+            storageBucket: "auraengineonline.firebasestorage.app",
+            messagingSenderId: "433967688454",
+            appId: "1:433967688454:web:61011b44105de083d68c87",
+            measurementId: "G-4C30YKM8ZF"
+        };
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        window.auraCloudDB = firebase.firestore();
+        window.firebase = firebase;
+
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        aura: {
+                            primary: '#4f46e5',
+                            indigo: '#6366f1',
+                            dark: '#020617'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; }
+        .space-font { font-family: 'Orbitron', sans-serif; }
+        
+        /* Сетка фона как в Django-админке, но современнее */
+        .market-bg {
+            background-size: 80px 80px;
+            background-image: radial-gradient(circle, rgba(79, 70, 229, 0.03) 1px, transparent 1px);
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .dark .glass-nav {
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .search-glow:focus {
+            box-shadow: 0 0 30px rgba(79, 70, 229, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-aura-dark dark:text-slate-100 min-h-screen market-bg">
+
+    <!-- =========================================================
+         HEADER: NAVIGATION & ACCOUNT
+         ========================================================= -->
+    <header class="h-24 sticky top-0 z-[100] glass-nav">
+        <div class="max-w-7xl mx-auto h-full px-8 flex justify-between items-center">
+            <!-- Logo -->
+            <div class="flex items-center gap-4 cursor-pointer" onclick="location.href='index.html'">
+                <div class="w-12 h-12 bg-aura-primary rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-500/30">
+                    <i class="fa-solid fa-cart-shopping text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tighter italic space-font text-aura-primary dark:text-white leading-none">AURA MARKET.</h1>
+                    <p class="text-[8px] font-black uppercase tracking-[0.4em] text-slate-400 mt-1 italic">Cloud Repository</p>
+                </div>
+            </div>
+
+            <!-- Global Controls -->
+            <div class="flex items-center gap-6">
+                <button onclick="toggleTheme()" class="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-all border border-slate-200 dark:border-white/10">
+                    <i id="theme-icon" class="fa-solid fa-moon text-xl"></i>
+                </button>
+                
+                <div id="auth-btn-container" class="animate-fade">
+                    <!-- Заполняется через app.js -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- =========================================================
+         MARKET CONTENT
+         ========================================================= -->
+    <main class="max-w-7xl mx-auto px-8 py-12">
+        
+        <!-- Toolbar: Поиск и Информация -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-16 animate-fade">
+            <div class="space-y-2">
+                <h2 class="text-5xl font-black tracking-tighter italic uppercase dark:text-white leading-none">Витрина курсов</h2>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest italic">Выберите модуль для ознакомления</p>
+            </div>
+            
+            <div class="relative w-full md:w-96">
+                <i class="fa-solid fa-search absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                <input type="text" id="course-search" placeholder="Найти в облаке..." 
+                       class="w-full pl-14 pr-6 py-5 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 outline-none search-glow transition-all font-bold text-sm shadow-sm dark:text-white">
+            </div>
+        </div>
+
+        <!-- Course Grid: Сюда app.js будет рендерить карточки -->
+        <div id="market-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 pb-32">
+            <!-- Loading State -->
+            <div class="col-span-full py-40 text-center opacity-30 animate-pulse">
+                <i class="fa-solid fa-spinner fa-spin text-6xl mb-6"></i>
+                <h3 class="text-2xl font-black uppercase tracking-widest italic leading-none">Синхронизация с Firestore...</h3>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- =========================================================
+         FOOTER: SOCIAL LINKS
+         ========================================================= -->
+    <footer class="max-w-7xl mx-auto px-8 py-20 border-t dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 text-slate-400">
+        <div class="flex items-center gap-6">
+            <span class="text-[10px] font-black uppercase tracking-widest">© 2026 Aura Architecture</span>
+            <span class="text-slate-800">|</span>
+            <div class="flex gap-4">
+                <i class="fa-brands fa-github hover:text-aura-primary cursor-pointer transition-colors"></i>
+                <i class="fa-brands fa-discord hover:text-aura-primary cursor-pointer transition-colors"></i>
+                <i class="fa-brands fa-telegram hover:text-aura-primary cursor-pointer transition-colors"></i>
+            </div>
+        </div>
+        <button onclick="location.href='index.html'" class="text-[10px] font-black uppercase tracking-widest hover:text-aura-primary transition-colors flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> На главную
+        </button>
+    </footer>
+
+    <!-- ПОДКЛЮЧЕНИЕ МАСТЕР-ЯДРА (app.js v28.0) -->
+    <script src="app.js"></script>
+    
+    <script>
+        /**
+         * Специфичная логика для страницы магазина.
+         * Вызывается после загрузки app.js
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ждем инициализации данных в app.js и принудительно переключаем на маркет
+            setTimeout(() => {
+                if (typeof window.switchTab === 'function') {
+                    window.switchTab('market');
+                }
+            }, 300);
+        });
+    </script>
+</body>
+</html>
