@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AURA Player — Просмотр курса</title>
+    <title>AURA Player — Интерактивное обучение</title>
     
-    <!-- ПОДКЛЮЧЕНИЕ СТИЛЕЙ -->
+    <!-- ПОДКЛЮЧЕНИЕ СТИЛЕЙ: Должны лежать в корне GitHub рядом с этим файлом -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="index.css">
     
@@ -13,12 +13,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- FIREBASE SDK (COMPAT) — Критично для синхронизации XP и данных курса -->
+    <!-- FIREBASE SDK (COMPAT) — Критично для работы плеера в онлайне -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <script>
+        /**
+         * КОНФИГУРАЦИЯ ОБЛАЧНОГО ДОСТУПА
+         */
         const firebaseConfig = {
             apiKey: "AIzaSyAnwcfKCVB35c4ReExi3KKIfH2b3HpEJSE",
             authDomain: "auraengineonline.firebaseapp.com",
@@ -29,10 +32,12 @@
             measurementId: "G-4C30YKM8ZF"
         };
 
+        // Инициализация
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         window.auraCloudDB = firebase.firestore();
         window.firebase = firebase;
 
+        // Настройка Tailwind для монолитного переключения тем
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -41,6 +46,7 @@
                         aura: {
                             primary: '#4f46e5',
                             indigo: '#6366f1',
+                            accent: '#f43f5e',
                             dark: '#020617'
                         }
                     }
@@ -52,55 +58,77 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;700;900&display=swap');
         
-        body { font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; 
+            overflow: hidden; 
+            transition: background-color 0.5s ease;
+        }
         .space-font { font-family: 'Orbitron', sans-serif; }
         
-        /* Архитектура плеера */
-        .player-layout {
+        /* СЕТКА ПЛЕЕРА */
+        .player-grid {
             display: grid;
-            grid-template-columns: 320px 1fr;
+            grid-template-columns: 340px 1fr;
             height: calc(100vh - 5rem);
         }
 
-        .glass-ui {
+        .glass-nav {
             background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
+            z-index: 100;
         }
-        .dark .glass-ui {
+        .dark .glass-nav {
             background: rgba(15, 23, 42, 0.8);
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Зона контента */
+        /* КОНТЕНТ-ЗОНА */
         #content-container {
             scroll-behavior: smooth;
+            background: #ffffff;
+        }
+        .dark #content-container {
+            background: #020617;
         }
 
-        /* Чат */
+        /* ИИ-ЧАТ (Sherlock Fix) */
         #ai-chat {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
+            z-index: 150;
         }
+        
+        /* Скроллбары */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(79, 70, 229, 0.2); border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-aura-dark dark:text-slate-100 transition-colors duration-500">
+<body class="bg-slate-50 text-slate-900 dark:bg-aura-dark dark:text-slate-100">
 
     <!-- =========================================================
-         TOP NAVIGATION BAR
+         HEADER: NAVIGATION & MASTER THEME
          ========================================================= -->
-    <header class="h-20 glass-ui sticky top-0 z-[100] flex justify-between items-center px-8 shadow-sm">
-        <button onclick="location.href='market.html'" class="flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-aura-primary transition-all">
-            <i class="fa-solid fa-arrow-left"></i> Назад в магазин
-        </button>
+    <header class="h-20 glass-nav flex justify-between items-center px-8 shadow-sm">
+        <div class="flex items-center gap-6">
+            <button onclick="location.href='market.html'" class="flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-aura-primary transition-all">
+                <i class="fa-solid fa-arrow-left"></i> Назад
+            </button>
+            <div class="w-px h-6 bg-slate-200 dark:bg-slate-800"></div>
+            <div class="flex items-center gap-3 text-aura-primary">
+                <i class="fa-solid fa-satellite-dish animate-pulse"></i>
+                <span class="text-[9px] font-black uppercase tracking-widest">Cloud Preview</span>
+            </div>
+        </div>
 
         <div class="text-center">
-            <h2 id="player-course-title" class="space-font font-black dark:text-white uppercase tracking-tighter text-xl leading-none mb-1 italic">Загрузка...</h2>
-            <p id="player-lesson-title" class="text-[8px] font-black uppercase text-aura-primary tracking-[0.4em] opacity-80">Online Interactive Mode</p>
+            <h2 id="player-course-title" class="space-font font-black dark:text-white uppercase tracking-tighter text-xl leading-none italic">Загрузка курса...</h2>
+            <p id="player-lesson-title" class="text-[8px] font-black uppercase text-aura-primary tracking-[0.4em] mt-1 opacity-70">Выбор модуля</p>
         </div>
 
         <div class="flex items-center gap-4">
-            <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-all border border-slate-200 dark:border-white/10">
+            <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-all border border-slate-200 dark:border-white/10">
                 <i id="theme-icon-app" class="fa-solid fa-moon text-lg"></i>
             </button>
             <div id="auth-btn-container"></div>
@@ -108,152 +136,157 @@
     </header>
 
     <!-- =========================================================
-         MAIN PLAYER INTERFACE
+         MAIN WORKSPACE
          ========================================================= -->
-    <div class="player-layout">
+    <div class="player-grid">
         
-        <!-- Sidebar: Программа модуля -->
-        <aside class="bg-white dark:bg-slate-900/50 border-r border-slate-200 dark:border-white/5 overflow-y-auto p-6 custom-scrollbar">
-            <div class="flex justify-between items-center mb-8 px-2">
-                <h3 class="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] italic underline decoration-aura-primary decoration-2 underline-offset-4">Содержание курса</h3>
-                <i class="fa-solid fa-list-check text-slate-300"></i>
+        <!-- Sidebar: Lessons List -->
+        <aside class="bg-white dark:bg-slate-900/40 border-r border-slate-200 dark:border-white/5 overflow-y-auto p-8 custom-scrollbar">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] italic">Программа курса</h3>
+                <i class="fa-solid fa-list-ul text-aura-primary opacity-30"></i>
             </div>
             
-            <div id="lessons-list" class="space-y-3">
-                <!-- Уроки генерируются через app.js -->
-                <div class="animate-pulse space-y-3">
-                    <div class="h-12 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
-                    <div class="h-12 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
-                </div>
+            <div id="lessons-list" class="space-y-4">
+                <!-- Генерируется через app.js -->
             </div>
         </aside>
 
-        <!-- Main Workspace: Отрисовка блоков контента -->
-        <main id="content-container" class="relative bg-white dark:bg-aura-dark overflow-y-auto p-12 lg:p-24 custom-scrollbar">
-            <!-- Сюда AuraRenderer.generateHTML() вставит Lego-блоки -->
-            <div id="empty-content" class="py-40 text-center opacity-20">
-                <i class="fa-solid fa-cloud-download fa-fade text-6xl mb-6"></i>
-                <h3 class="text-2xl font-black uppercase tracking-widest">Получение данных из Firestore...</h3>
+        <!-- Content Area: Lego Blocks Renderer -->
+        <main id="content-container" class="relative overflow-y-auto p-12 lg:p-24 custom-scrollbar">
+            <!-- Сюда AuraRenderer.generateHTML() отрисует блоки -->
+            <div class="py-40 text-center opacity-20">
+                <i class="fa-solid fa-cloud-bolt fa-fade text-7xl mb-6"></i>
+                <h3 class="text-3xl font-black uppercase tracking-[0.2em] italic">Синхронизация...</h3>
             </div>
         </main>
 
     </div>
 
     <!-- =========================================================
-         ACTION FOOTER (XP & COMPLETE)
+         FOOTER: STATUS & ACTIONS
          ========================================================= -->
-    <footer class="h-24 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/5 px-10 flex justify-between items-center z-50 shadow-2xl">
+    <footer class="h-24 glass-nav border-t border-slate-200 dark:border-white/5 px-10 flex justify-between items-center">
         <div class="flex items-center gap-6">
-            <div id="lesson-status-tag" class="hidden px-6 py-2 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase border border-emerald-500/20">
+            <div id="lesson-status-tag" class="hidden px-6 py-2 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20 shadow-sm animate-fade">
                 <i class="fa-solid fa-check-double mr-2"></i> Модуль пройден
             </div>
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-[9px] font-black uppercase opacity-40">Active Session</span>
+            <div class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 rounded-xl border dark:border-white/5">
+                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="text-[9px] font-black uppercase text-slate-400">Live Session Active</span>
             </div>
         </div>
 
-        <button id="complete-btn" onclick="triggerComplete()" class="bg-aura-primary text-white px-16 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest italic shadow-2xl hover:bg-indigo-700 transition-all flex items-center gap-4">
+        <button id="complete-btn" onclick="handleCompleteAction()" class="bg-aura-primary text-white px-16 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest italic shadow-2xl hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all flex items-center gap-4">
             <span>Завершить урок</span>
-            <i class="fa-solid fa-circle-check text-lg"></i>
+            <i class="fa-solid fa-circle-arrow-right text-lg"></i>
         </button>
     </footer>
 
     <!-- =========================================================
-         MODALS & FLOATING WIDGETS
+         QUIZ MODAL (Control Panel)
          ========================================================= -->
-
-    <!-- Quiz Modal -->
     <div id="quiz-modal" class="hidden fixed inset-0 z-[300] bg-slate-950/95 backdrop-blur-xl flex items-center justify-center p-6">
         <div class="bg-white dark:bg-slate-900 p-12 rounded-[4.5rem] max-w-2xl w-full shadow-2xl border dark:border-white/5 animate-slideUp">
-            <div class="text-center mb-10">
-                <h3 class="text-4xl font-black tracking-tighter italic uppercase">Контроль знаний</h3>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4">Наберите 100% для начисления XP в профиль</p>
+            <div class="text-center mb-12">
+                <div class="w-20 h-20 bg-indigo-500/10 text-aura-primary rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner"><i class="fa-solid fa-vial"></i></div>
+                <h3 class="text-4xl font-black tracking-tighter italic uppercase dark:text-white leading-none">Контроль знаний</h3>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4 opacity-70">Наберите 100% правильных ответов для прогресса</p>
             </div>
-            <div id="quiz-questions-container" class="max-h-[45vh] overflow-y-auto pr-4 custom-scrollbar"></div>
+            
+            <div id="quiz-questions-container" class="max-h-[40vh] overflow-y-auto pr-4 custom-scrollbar"></div>
+            
             <div class="grid grid-cols-2 gap-6 mt-12">
-                <button onclick="closeQuiz()" class="py-5 rounded-3xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:bg-white/5 transition-all">Отмена</button>
-                <button onclick="validateQuiz()" class="bg-aura-primary py-5 rounded-3xl text-white font-black text-[10px] uppercase shadow-2xl hover:bg-indigo-700 transition-all">Проверить</button>
+                <button onclick="document.getElementById('quiz-modal').classList.add('hidden')" class="py-5 rounded-3xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">Отмена</button>
+                <button onclick="validateQuiz()" class="bg-aura-primary py-5 rounded-3xl text-white font-black text-[10px] uppercase shadow-2xl shadow-indigo-500/20 hover:bg-indigo-700 transition-all">Проверить ответы</button>
             </div>
         </div>
     </div>
 
-    <!-- AI Chat Assistant -->
-    <div class="fixed bottom-32 right-10 z-[150]">
-        <button onclick="toggleChat()" class="w-16 h-16 bg-aura-primary text-white rounded-3xl shadow-2xl flex items-center justify-center hover:scale-110 transition-all group">
-            <i class="fa-solid fa-robot text-2xl"></i>
+    <!-- =========================================================
+         AI ASSISTANT (Sherlock Fix: Lower Priority)
+         ========================================================= -->
+    <div class="fixed bottom-32 right-10 z-[200]">
+        <!-- Кнопка Робота -->
+        <button onclick="toggleChat()" class="ai-pulse w-16 h-16 bg-aura-primary text-white rounded-3xl shadow-2xl flex items-center justify-center hover:scale-110 transition-all group">
+            <i class="fa-solid fa-robot text-2xl group-hover:rotate-12 transition-transform"></i>
         </button>
-        <div id="ai-chat" class="hidden absolute bottom-20 right-0 w-96 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border dark:border-white/5 overflow-hidden animate-slideUp">
-            <div class="p-6 bg-slate-900 text-white flex justify-between items-center">
-                <span class="font-black text-[10px] uppercase tracking-widest italic">Aura Online Assistant</span>
-                <i class="fa-solid fa-chevron-down opacity-50 cursor-pointer" onclick="toggleChat()"></i>
+
+        <!-- Окно чата (Hidden by default) -->
+        <div id="ai-chat" class="hidden absolute bottom-20 right-0 w-96 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden animate-slideUp">
+            <!-- Header чата -->
+            <div class="p-6 bg-slate-900 dark:bg-slate-800 text-white flex justify-between items-center border-b dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-bolt text-yellow-400"></i>
+                    <span class="font-black text-[10px] uppercase tracking-widest italic leading-none">Aura AI Assistant</span>
+                </div>
+                <!-- ШЕРЛОК: Это та самая кнопка сворачивания! -->
+                <button onclick="toggleChat()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-all">
+                    <i class="fa-solid fa-chevron-down opacity-50"></i>
+                </button>
             </div>
+            
+            <!-- Сообщения -->
             <div id="chat-messages" class="h-80 overflow-y-auto p-6 space-y-4 font-medium text-sm custom-scrollbar bg-slate-50 dark:bg-aura-dark">
-                <div class="bg-indigo-600 text-white p-4 rounded-2xl rounded-tl-none shadow-md">
-                    Привет! Я анализирую облачный манифест этого курса. Задай любой вопрос по теме урока!
+                <div class="bg-aura-primary text-white p-4 rounded-2xl rounded-tl-none shadow-lg">
+                    Привет! Я Aura AI. Анализирую материалы текущего урока... Задай любой вопрос по теме!
                 </div>
             </div>
-            <div class="p-5 border-t dark:border-white/5 glass-ui">
+
+            <!-- Ввод -->
+            <div class="p-5 border-t dark:border-white/5 bg-white dark:bg-slate-900">
                 <div class="relative">
-                    <input type="text" id="chat-input" placeholder="Ваш вопрос..." class="w-full p-4 pr-12 rounded-2xl bg-white dark:bg-slate-800 border-none outline-none shadow-inner dark:text-white">
-                    <button onclick="sendChatMessage()" class="absolute right-4 top-1/2 -translate-y-1/2 text-aura-primary hover:text-indigo-400">
-                        <i class="fa-solid fa-paper-plane text-xl"></i>
+                    <input type="text" id="chat-input" placeholder="Спросить у ИИ..." class="w-full p-4 pr-12 rounded-2xl bg-slate-100 dark:bg-slate-800 border-none outline-none shadow-inner dark:text-white font-bold text-xs">
+                    <button onclick="sendChatMessage()" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-aura-primary text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 transition-colors shadow-lg">
+                        <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ПОДКЛЮЧЕНИЕ МАСТЕР-ЯДРА (v28.0) -->
+    <!-- ПОДКЛЮЧЕНИЕ ГЛАВНОГО ЯДРА -->
     <script src="app.js"></script>
 
     <script>
         /**
-         * ЛОГИКА ЗАПУСКА ПЛЕЕРА
-         * Извлекает ID курса из URL и загружает его из Firestore
+         * КРИТИЧЕСКАЯ ЛОГИКА ЗАГРУЗКИ ПО ID
          */
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const courseId = urlParams.get('id');
 
             if (!courseId) {
-                alert("Курс не выбран!");
+                alert("ID курса не передан!");
                 location.href = 'market.html';
                 return;
             }
 
-            // Ждем инициализации Firebase в app.js
+            // Ждем 500мс пока app.js инициализирует Firebase
             setTimeout(async () => {
-                try {
-                    const doc = await window.auraCloudDB.collection('courses').doc(courseId).get();
-                    if (doc.exists) {
-                        const courseData = doc.data();
-                        // Запускаем ядро плеера из app.js
-                        window.openCourse(encodeURIComponent(JSON.stringify(courseData)));
-                    } else {
-                        alert("Курс не найден в облаке!");
-                        location.href = 'market.html';
-                    }
-                } catch (e) {
-                    console.error("Firestore Load Error:", e);
+                if (window.auraCloudDB) {
+                    try {
+                        const doc = await window.auraCloudDB.collection('courses').doc(courseId).get();
+                        if (doc.exists) {
+                            window.openCourse(encodeURIComponent(JSON.stringify(doc.data())));
+                        } else {
+                            alert("Курс не найден в базе!");
+                            location.href = 'market.html';
+                        }
+                    } catch (e) { console.error("Firestore error:", e); }
                 }
             }, 500);
         });
 
-        function triggerComplete() {
-            // Если в app.js есть квиз - он сам вызовет showQuiz()
+        function handleCompleteAction() {
             const btn = document.getElementById('complete-btn');
             if (btn.innerText.includes('ТЕСТ')) {
-                window.validateQuiz(); // Это вызовет проверку
+                document.getElementById('quiz-modal').classList.remove('hidden');
+                if (typeof window.showQuiz === 'function') window.showQuiz();
             } else {
-                // В онлайне просто закрываем или даем XP
-                alert("Урок завершен! XP начислено.");
-                window.closeCourse();
+                alert("Урок завершен! Начислим XP в следующем обновлении.");
+                location.href = 'market.html';
             }
-        }
-
-        function closeQuiz() {
-            document.getElementById('quiz-modal').classList.add('hidden');
         }
     </script>
 </body>
