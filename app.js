@@ -443,14 +443,23 @@ async function saveLessonProgress() {
 // ==========================================
 // 9. ФИКС ЧАТА (КНОПКА "v")
 // ==========================================
-function toggleChat() { 
-    const chat = document.getElementById('ai-chat');
-    if (chat) {
-        // Если чат открывается, убеждаемся что он не перекрывает всё на мобилках
-        chat.classList.toggle('hidden');
-        console.log("Чат переключен");
+function toggleChat() {
+    const chatWindow = document.getElementById('ai-chat');
+    if (chatWindow) {
+        // Если класс hidden есть — убираем его (показываем), если нет — добавляем (скрываем)
+        chatWindow.classList.toggle('hidden');
+        
+        // Маленький фикс для мобилок: скроллим сообщения вниз при открытии
+        if (!chatWindow.classList.contains('hidden')) {
+            const box = document.getElementById('chat-messages');
+            if (box) box.scrollTop = box.scrollHeight;
+        }
+    } else {
+        console.error("Критическая ошибка: Элемент #ai-chat не найден в HTML!");
     }
 }
+
+// Принудительно привязываем к окну, чтобы HTML-кнопки её видели 100%
 window.toggleChat = toggleChat;
 
 async function sendChatMessage() {
