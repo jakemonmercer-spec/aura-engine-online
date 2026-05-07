@@ -355,20 +355,25 @@ function handleCourseClick(courseId) {
     }
 }
 window.handleCourseClick = handleCourseClick;
+
 function renderMarketGrid(courses) {
     const grid = document.getElementById('market-grid');
     if (!grid) return;
     grid.innerHTML = courses.map(c => `
         <div class="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center shadow-sm relative group animate-slideUp">
-            <div class="absolute top-6 right-8"><span class="bg-indigo-100 dark:bg-indigo-900/50 text-aura-indigo text-[8px] font-black px-3 py-1 rounded-full uppercase border border-indigo-200 dark:border-indigo-800">Cloud Market</span></div>
-            <div class="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-3xl mb-8 flex items-center justify-center text-slate-300 text-4xl group-hover:text-aura-primary transition-all shadow-inner"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+            <div class="absolute top-6 right-8">
+                <span class="bg-indigo-100 dark:bg-indigo-900/50 text-aura-indigo text-[8px] font-black px-3 py-1 rounded-full uppercase border border-indigo-200 dark:border-indigo-800">Cloud Market</span>
+            </div>
+            <div class="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-3xl mb-8 flex items-center justify-center text-slate-300 text-4xl group-hover:text-aura-primary transition-all shadow-inner">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+            </div>
             <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-2 leading-tight uppercase tracking-tighter">${c.title || 'Новый курс'}</h3>
             <p class="text-[10px] font-black uppercase text-slate-400 mb-10 italic">${c.author || '...'}</p>
             <button onclick="handleMarketAction('${c.id}', '${c.folder}')" class="w-full py-5 bg-slate-900 dark:bg-indigo-600 text-white rounded-2xl font-black text-[9px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl">
                 ${IS_ONLINE ? 'Открыть превью' : 'Скачать оффлайн'}
             </button>
-        </div>`).join('');
-}
+        </div>`).join(''); // <-- ВАЖНО: закрыли map и превратили в строку
+} // <-- ВАЖНО: закрыли функцию
 
 // ==========================================
 // 7. ИНТЕРАКТИВНЫЙ ПЛЕЕР
@@ -709,15 +714,19 @@ function showQuiz() {
 // ==========================================
 // 11. ГЛОБАЛЬНЫЕ ЭКСПОРТЫ (ДЛЯ HTML)
 // ==========================================
+// ==========================================
+// 11. ГЛОБАЛЬНЫЕ ЭКСПОРТЫ (ДЛЯ HTML КНОПОК)
+// ==========================================
 window.AuraRenderer = AuraRenderer;
 window.AuraSocial = AuraSocial;
 window.toggleTheme = () => AuraThemeEngine.toggle();
 window.toggleChat = toggleChat;
 window.sendChatMessage = sendChatMessage;
-window.handleCourseClick = handleCourseClick;
+window.handleCourseClick = handleCourseClick; // Тот самый фикс SyntaxError
 window.loadLesson = loadLesson;
 window.showQuiz = showQuiz;
 window.closeQuiz = () => document.getElementById('quiz-modal').classList.add('hidden');
 window.validateQuiz = validateQuiz;
 window.handleCompleteAction = handleCompleteAction;
 window.handleMarketAction = handleMarketAction;
+window.showXPPopup = showXPPopup;
