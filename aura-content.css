@@ -1,1 +1,127 @@
+/* =========================================================
+   AURA CONTENT SYSTEM - ULTIMATE ADAPTIVE v6.0
+   ПОДДЕРЖКА: Desktop, Tablet, iPhone SE (320px+)
+   ========================================================= */
 
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;700;900&display=swap');
+
+/* 1. БАЗОВЫЕ НАСТРОЙКИ И ТЕМЫ */
+html, body, .aura-content-body { 
+    font-family: 'Inter', sans-serif; 
+    line-height: 1.6; 
+    background-color: transparent;
+    /* Fluid font-size: от 16px до 18px в зависимости от экрана */
+    font-size: clamp(16px, 2vw, 18px);
+    color: #1e293b !important;
+    margin: 0;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+/* Темная тема */
+.dark html, .dark body, .dark .aura-content-body { 
+    color: #f1f5f9 !important; 
+}
+
+/* Контейнер-обертка */
+.aura-content-body {
+    max-width: 900px;
+    margin: 0 auto;
+    /* Гибкие отступы: на iPhone SE будут 15px, на Desktop - 40px */
+    padding: clamp(15px, 5vw, 40px);
+    box-sizing: border-box;
+}
+
+/* 2. АДАПТИВНЫЕ ЗАГОЛОВКИ */
+h1, .aura-content-body h1 { 
+    font-family: 'Orbitron', sans-serif; 
+    font-weight: 900; 
+    /* Текст не вылезет за края на iPhone SE */
+    font-size: clamp(24px, 6vw, 54px); 
+    color: #4f46e5 !important;
+    text-align: center; 
+    margin-bottom: clamp(20px, 4vw, 40px);
+    text-transform: uppercase;
+    line-height: 1.1;
+    letter-spacing: -1px;
+}
+.dark h1, .dark .aura-content-body h1 { color: #818cf8 !important; }
+
+/* 3. ГИБКИЕ СТЕКЛЯННЫЕ КАРТОЧКИ (Glass) */
+.glass-card, .aura-content-body .glass-card { 
+    background: rgba(255, 255, 255, 0.9) !important; 
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: clamp(20px, 4vw, 40px); 
+    /* Сжимаем внутренние отступы для мобилок */
+    padding: clamp(20px, 5vw, 50px); 
+    margin-bottom: 30px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.dark .glass-card, .dark .aura-content-body .glass-card { 
+    background: rgba(15, 23, 42, 0.8) !important; 
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 4. БЛОК ТЕСТА (Full Width Mobile) */
+.quiz-notif, .aura-content-body .quiz-notif { 
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important; 
+    color: #ffffff !important;
+    border-radius: clamp(20px, 4vw, 35px); 
+    padding: clamp(25px, 6vw, 50px); 
+    text-align: center; 
+    margin: 30px 0;
+}
+.quiz-notif *, .aura-content-body .quiz-notif * { color: #ffffff !important; }
+
+/* 5. ЦИТАТЫ (Responsive padding) */
+.aura-quote, .aura-content-body .aura-quote { 
+    border-left: 6px solid #4f46e5 !important; 
+    padding: 15px 20px 15px 25px; 
+    background: rgba(79, 70, 229, 0.05) !important; 
+    border-radius: 0 20px 20px 0; 
+    font-style: italic; 
+    /* Шрифт цитаты на iPhone SE не должен быть гигантским */
+    font-size: clamp(18px, 3vw, 24px);
+    margin: 25px 0;
+}
+
+/* 6. МЕДИА (Картинки и Видео - 100% по ширине) */
+img, video, iframe { 
+    max-width: 100% !important; 
+    height: auto !important;
+    border-radius: clamp(15px, 3vw, 30px); 
+    display: block; 
+    margin: 20px auto; 
+}
+
+/* Фикс для видео 16:9 на смартфонах */
+.aspect-video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+}
+
+/* 7. СПИСКИ */
+.aura-list, .aura-content-body ul { 
+    padding-left: 5px; 
+}
+.aura-list li, .aura-content-body li { 
+    font-size: clamp(15px, 2.5vw, 18px);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+/* 8. СПЕЦИАЛЬНЫЙ ФИКС ДЛЯ ОЧЕНЬ МАЛЕНЬКИХ ЭКРАНОВ (iPhone SE / 320px) */
+@media (max-width: 380px) {
+    .aura-content-body {
+        padding: 12px;
+    }
+    .glass-card {
+        padding: 15px;
+    }
+    h1 {
+        letter-spacing: 0;
+    }
+}
