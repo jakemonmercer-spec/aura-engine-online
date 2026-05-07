@@ -87,19 +87,30 @@ const AuraSocial = {
         await window.firebase.auth().signOut();
         location.reload();
     },
-    async syncUserProfile() {
+ async syncUserProfile() {
         if (!currentUser || !window.auraCloudDB) return;
         const ref = window.auraCloudDB.collection('users').doc(currentUser.uid);
         const doc = await ref.get();
         if (!doc.exists) {
-            await userRef.set({ name: currentUser.displayName, xp: 0, avatar: currentUser.photoURL, lastSeen: new Date().toISOString() });
+            await ref.set({ 
+                name: currentUser.displayName, 
+                xp: 0, 
+                avatar: currentUser.photoURL, 
+                lastSeen: new Date().toISOString() 
+            });
         }
-    },
+    }, // Оставляем одну скобку здесь
+
     async addXP(pts) {
         if (!IS_ONLINE || !currentUser) return;
-        await window.auraCloudDB.collection('users').doc(currentUser.uid).update({
-            xp: window.firebase.firestore.FieldValue.increment(pts)
-        });
+        try {
+            await window.auraCloudDB.collection('users').doc(currentUser.uid).update({
+                xp: window.firebase.firestore.FieldValue.increment(pts)
+            });
+            console.log(`🏆 Начислено ${pts} XP!`);
+        } catch (e) {
+            console.error("Ошибка начисления XP:", e);
+        }
     },
     async loadLeaderboard() {
         const cont = document.getElementById('leaderboard-container');
