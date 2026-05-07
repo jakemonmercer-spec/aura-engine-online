@@ -375,11 +375,16 @@ function renderLessonsSidebar() {
 }
 
 function updatePlayerUI() {
-    const btn = document.getElementById('complete-btn'), tag = document.getElementById('lesson-status-tag');
+    const btn = document.getElementById('complete-btn');
     if (!btn) return;
-    const isDone = currentCourse.completedLessons ? currentCourse.completedLessons.includes(currentLessonId) : false;
-    if (tag) tag.classList.toggle('hidden', !isDone);
-    btn.innerHTML = (currentQuiz.length > 0) ? `<span>ПРОЙТИ ТЕСТ</span> <i class="fa-solid fa-vial"></i>` : `<span>ЗАВЕРШИТЬ УРОК</span> <i class="fa-solid fa-check-circle"></i>`;
+
+    if (currentQuiz && currentQuiz.length > 0) {
+        btn.innerHTML = `<span>ПРОЙТИ ТЕСТ</span> <i class="fa-solid fa-vial"></i>`;
+        btn.onclick = () => { document.getElementById('quiz-modal').classList.remove('hidden'); showQuiz(); };
+    } else {
+        btn.innerHTML = `<span>ЗАВЕРШИТЬ УРОК</span> <i class="fa-solid fa-check-circle"></i>`;
+        btn.onclick = () => saveLessonProgress();
+    }
 }
 
 // ==========================================
