@@ -281,7 +281,6 @@ function renderLibraryGrid(courses) {
         </div>
     `).join('');
 }
-
 function handleCourseClick(courseId) {
     const course = allCourses.find(c => c.id === courseId) || marketCourses.find(c => c.id === courseId);
     if (course) {
