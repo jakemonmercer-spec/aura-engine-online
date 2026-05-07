@@ -112,23 +112,28 @@ const AuraSocial = {
             console.error("Ошибка начисления XP:", e);
         }
     },
-    async loadLeaderboard() {
+ loadLeaderboard() {
         const cont = document.getElementById('leaderboard-container');
-        if (!cont) return;
-        try {
-            const snap = await window.auraCloudDB.collection('users').orderBy('xp', 'desc').limit(5).get();
-            cont.innerHTML = snap.docs.map((doc, i) => {
-                const u = doc.data();
-                return `<div class="flex items-center justify-between p-4 bg-white/5 rounded-3xl border border-white/5 mb-2">
-                    <div class="flex items-center gap-3">
-                        <span class="opacity-30 font-black text-[10px]">#${i+1}</span>
-                        <img src="${u.avatar}" class="w-8 h-8 rounded-full border border-aura-primary/20">
-                        <span class="text-xs font-bold">${u.name}</span>
-                    </div>
-                    <span class="text-aura-primary font-black text-[10px]">${u.xp} XP</span>
-                </div>`;
-            }).join('');
-        } catch (e) { cont.innerHTML = "<p class='text-center opacity-20 text-[10px]'>Рейтинг временно недоступен</p>"; }
+        if (!cont || !window.auraCloudDB) return;
+
+        // Используем onSnapshot вместо get() для живой связи
+        window.auraCloudDB.collection('users')
+            .orderBy('xp', 'desc')
+            .limit(5)
+            .onSnapshot((snap) => {
+                cont.innerHTML = snap.docs.map((doc, i) => {
+                    const u = doc.data();
+                    return `
+                        <div class="flex items-center justify-between p-4 bg-white/5 rounded-3xl border border-white/5 mb-2 animate-fade">
+                            <div class="flex items-center gap-3">
+                                <span class="opacity-30 font-black text-[10px]">#${i + 1}</span>
+                                <img src="${u.avatar || 'https://ui-avatars.com/api/?name='+u.name}" class="w-8 h-8 rounded-full border border-aura-primary/20">
+                                <span class="text-xs font-bold truncate w-24 md:w-auto">${u.name}</span>
+                            </div>
+                            <span class="xp-text text-[10px]">${u.xp} XP</span>
+                        </div>`;
+                }).join('');
+            });
     },
     updateUI() {
         const btn = document.getElementById('auth-btn-container');
@@ -139,7 +144,36 @@ const AuraSocial = {
                 <span class="text-[9px] font-black uppercase hidden lg:block text-slate-400">${currentUser.displayName}</span>
                 <button onclick="AuraSocial.logout()" class="p-2 text-slate-500 hover:text-red-500"><i class="fa-solid fa-power-off text-sm"></i></button>
             </div>`;
+            
         }
+        
+    },
+    // Сохранение пройденного урока в Облако
+    async saveProgressToCloud(courseId, lessonId) {
+        if (!currentUser || !window.auraCloudDB) return;
+        const ref = window.auraCloudDB.collection('users').doc(currentUser.uid);
+        
+        try {
+            // Используем arrayUnion, чтобы добавить ID урока в массив, не затирая старые
+            await ref.set({
+                progress: {
+                    [courseId]: window.firebase.firestore.FieldValue.arrayUnion(lessonId)
+                }
+            }, { merge: true });
+            console.log("☁️ Прогресс синхронизирован с облаком");
+        } catch (e) {
+            console.error("Ошибка синхронизации:", e);
+        }
+    },
+
+    // Загрузка всего прогресса при входе
+    async loadCloudProgress() {
+        if (!currentUser || !window.auraCloudDB) return null;
+        const doc = await window.auraCloudDB.collection('users').doc(currentUser.uid).get();
+        if (doc.exists && doc.data().progress) {
+            return doc.data().progress;
+        }
+        return {};
     }
 };
 
@@ -196,8 +230,17 @@ const AuraRenderer = {
                 </header>`;
             case 'text':
                 return `<div class="${cW} mx-auto ${space} text-slate-700 dark:text-slate-300 text-lg leading-relaxed">${b.data.p || ''}</div>`;
-            case 'image':
-                return `<div class="${mW} mx-auto ${space} group animate-fade"><img src="${b.data.url || ''}" class="w-full rounded-[2.5rem] shadow-2xl border dark:border-white/5"></div>`;
+         case 'image':
+    let imgSrc = b.data.url || '';
+    // Если мы онлайн и путь локальный (media/...) — это значит, что в онлайне картинки нет.
+    // Мы можем вывести заглушку или оригинальную ссылку, если она сохранилась.
+    if (IS_ONLINE && imgSrc.startsWith('media/')) {
+        return `<div class="${mW} mx-auto ${space} py-10 border-2 border-dashed border-white/5 rounded-3xl text-center">
+                    <i class="fa-solid fa-image opacity-20 text-4xl"></i>
+                    <p class="text-[8px] uppercase mt-2 opacity-30">Медиа доступно только в Desktop версии</p>
+                </div>`;
+    }
+    return `<div class="${mW} mx-auto ${space} group animate-fade"><img src="${imgSrc}" class="w-full rounded-[2.5rem] shadow-2xl border dark:border-white/5"></div>`;
             case 'video':
                 return `<div class="${mW} mx-auto ${space} animate-fade"><video controls class="w-full rounded-[2.5rem] bg-black border dark:border-white/10"><source src="${b.data.url || ''}" type="video/mp4"></video></div>`;
             case 'glass':
@@ -271,27 +314,39 @@ function switchTab(tab) {
 function renderLibraryGrid(courses) {
     const grid = document.getElementById('courses-grid');
     if (!grid) return;
+    
     if (!courses.length) { 
         grid.innerHTML = `<div class="col-span-full py-20 text-center opacity-30 font-black uppercase italic tracking-widest">Библиотека пуста</div>`; 
         return; 
     }
 
-    grid.innerHTML = courses.map(course => `
-        <div class="course-card bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm animate-fade">
-            <div onclick="handleCourseClick('${course.id}')" class="cursor-pointer">
-                <h3 class="text-2xl font-black dark:text-white mb-2 uppercase tracking-tighter leading-none">
-                    ${course.title || 'Курс'}
-                </h3>
-                <p class="text-[10px] font-black uppercase text-slate-400 mb-6">
-                    Автор: ${course.author || '...'}
-                </p>
-                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden shadow-inner">
-                    <div class="bg-indigo-600 h-full transition-all duration-1000" style="width: 0%"></div>
+    grid.innerHTML = courses.map(course => {
+        // Расчет прогресса
+        const done = (course.completedLessons) ? [...new Set(course.completedLessons)].length : 0;
+        const total = (course.lessons && course.lessons.length > 0) ? course.lessons.length : 1;
+        const prc = Math.round((done / total) * 100) || 0;
+
+        return `
+            <div class="course-card bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm animate-fade">
+                <div onclick="handleCourseClick('${course.id}')" class="cursor-pointer">
+                    <div class="w-14 h-14 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 shadow-inner">
+                        <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-black dark:text-white mb-2 uppercase tracking-tighter leading-none">
+                        ${course.title || 'Без названия'}
+                    </h3>
+                    <p class="text-[10px] font-black uppercase text-slate-400 mb-6">
+                        Автор: ${course.author || 'Aura Expert'}
+                    </p>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden shadow-inner">
+                        <div class="bg-indigo-600 h-full transition-all duration-1000" style="width: ${prc}%"></div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    `).join('');
+            </div>`;
+    }).join('');
 }
+
+
 
 function handleCourseClick(courseId) {
     const course = allCourses.find(c => c.id === courseId) || marketCourses.find(c => c.id === courseId);
@@ -318,11 +373,31 @@ function renderMarketGrid(courses) {
 // ==========================================
 // 7. ИНТЕРАКТИВНЫЙ ПЛЕЕР
 // ==========================================
-function openCourse(dataRaw) {
+async function openCourse(dataRaw) {
     currentCourse = JSON.parse(decodeURIComponent(dataRaw));
+    
+    if (IS_ONLINE) {
+        // Сначала берем локальный прогресс
+        const local = localStorage.getItem('aura_progress_' + currentCourse.id);
+        currentCourse.completedLessons = local ? JSON.parse(local) : [];
+
+        // Если ученик вошел в Google — подтягиваем данные из облака
+        if (currentUser) {
+            const cloudProgress = await AuraSocial.loadCloudProgress();
+            if (cloudProgress && cloudProgress[currentCourse.id]) {
+                // Склеиваем локальный и облачный прогресс (чтобы ничего не потерять)
+                const merged = [...new Set([...currentCourse.completedLessons, ...cloudProgress[currentCourse.id]])];
+                currentCourse.completedLessons = merged;
+                // Обновляем локалку свежими данными из облака
+                localStorage.setItem('aura_progress_' + currentCourse.id, JSON.stringify(merged));
+            }
+        }
+    }
+
     const playerView = document.getElementById('player-view'), pTitle = document.getElementById('player-course-title');
     if (playerView) playerView.classList.remove('hidden');
     if (pTitle) pTitle.innerText = currentCourse.title;
+    
     if (currentCourse.lessons && currentCourse.lessons.length > 0) loadLesson(currentCourse.lessons[0].id);
 }
 
@@ -335,14 +410,17 @@ function closeCourse() {
 }
 
 function loadLesson(id) {
+    // Используем '==' вместо '===' чтобы не зависеть от того, строка это или число
     const lesson = currentCourse.lessons.find(l => l.id == id);
-    if (!lesson) return;
-    
+    if (!lesson) {
+        console.error("Урок не найден:", id);
+        return;
+    }
     currentLessonId = id; 
     currentQuiz = lesson.quiz || [];
     
-    if (document.getElementById('player-lesson-title')) 
-        document.getElementById('player-lesson-title').innerText = lesson.title;
+    const titleEl = document.getElementById('player-lesson-title');
+    if (titleEl) titleEl.innerText = lesson.title;
     
     renderLessonsSidebar();
     
@@ -350,17 +428,19 @@ function loadLesson(id) {
     if (!container) return;
 
     if (IS_ONLINE) {
-        // ОНЛАЙН: Используем ту же обертку, что и в Desktop для aura-content.css
+        // ОНЛАЙН: Прямой рендеринг блоков в обертку стилей
         container.innerHTML = `
             <div class="aura-content-body">
-                ${AuraRenderer.generateHTML(lesson.blocks || lesson.htmlBody || "")}
+                ${AuraRenderer.generateHTML(lesson.blocks || lesson.htmlBody || "Контент недоступен")}
             </div>`;
+        // Прокручиваем наверх при смене урока
+        container.scrollTop = 0;
     } else {
-        // ОФФЛАЙН (Localhost):
-        const url = `/content/user/${currentCourse.folder}/${lesson.content}`;
+        // ОФФЛАЙН (Localhost): Загрузка через iframe
+        const url = `/content/user/${encodeURIComponent(currentCourse.folder)}/${encodeURIComponent(lesson.content)}`;
         container.innerHTML = `<iframe id="content-frame" src="${url}" class="w-full h-full border-none bg-white dark:bg-slate-900 animate-fade"></iframe>`;
         
-        // Прокидываем тему в iframe (как в Desktop)
+        // Синхронизация темы для iframe
         setTimeout(() => {
             const frame = document.getElementById('content-frame');
             if (frame && frame.contentWindow) {
@@ -378,7 +458,7 @@ function renderLessonsSidebar() {
     list.innerHTML = currentCourse.lessons.map((l, i) => {
         const active = currentLessonId === l.id;
         const done = currentCourse.completedLessons ? currentCourse.completedLessons.includes(l.id) : false;
-     return `<button onclick="loadLesson('${l.id}')" class="w-full text-left p-5 rounded-2xl transition-all flex items-center justify-between font-bold text-sm ${active ? 'bg-indigo-600 text-white shadow-xl' : 'bg-white dark:bg-slate-800 dark:text-slate-300 shadow-sm'}">
+  return `<button onclick="loadLesson('${l.id}')" class="w-full text-left p-5 rounded-2xl transition-all flex items-center justify-between font-bold text-sm ${active ? 'bg-indigo-600 text-white shadow-xl' : 'bg-white dark:bg-slate-800 dark:text-slate-300 shadow-sm'}">
             <span class="truncate">${i + 1}. ${l.title}</span>
             <i class="fa-solid ${done ? 'fa-check-circle text-green-500' : 'fa-play-circle'} opacity-50"></i>
         </button>`;
@@ -387,14 +467,20 @@ function renderLessonsSidebar() {
 
 function updatePlayerUI() {
     const btn = document.getElementById('complete-btn');
+    const tag = document.getElementById('lesson-status-tag');
     if (!btn) return;
 
+    const isDone = currentCourse.completedLessons ? currentCourse.completedLessons.includes(currentLessonId) : false;
+    if (tag) tag.classList.toggle('hidden', !isDone);
+
+    // Если в уроке есть тест — меняем кнопку
     if (currentQuiz && currentQuiz.length > 0) {
         btn.innerHTML = `<span>ПРОЙТИ ТЕСТ</span> <i class="fa-solid fa-vial"></i>`;
-        btn.onclick = () => { document.getElementById('quiz-modal').classList.remove('hidden'); showQuiz(); };
+        // При клике открываем модалку (функция handleCompleteAction ниже)
+        btn.onclick = () => handleCompleteAction();
     } else {
         btn.innerHTML = `<span>ЗАВЕРШИТЬ УРОК</span> <i class="fa-solid fa-check-circle"></i>`;
-        btn.onclick = () => saveLessonProgress();
+        btn.onclick = () => handleCompleteAction();
     }
 }
 // ==========================================
@@ -430,16 +516,17 @@ async function saveLessonProgress() {
     }
     
     if (IS_ONLINE) {
-        // 1. Сохраняем локально для мгновенного отклика
+        // 1. Быстрое сохранение в браузере (чтобы сразу отобразилась галочка)
         localStorage.setItem('aura_progress_' + currentCourse.id, JSON.stringify(currentCourse.completedLessons));
         
-        // 2. Если залогинен — отправляем XP и статус в Cloud
+        // 2. Если залогинен — отправляем в Firestore навсегда
         if (currentUser) {
-            await AuraSocial.addXP(AURA_UI.xpPerQuiz || 10);
-            // Можно добавить сохранение прогресса конкретно в коллекцию 'users/uid/progress'
+            await AuraSocial.saveProgressToCloud(currentCourse.id, currentLessonId);
+            await AuraSocial.addXP(AURA_UI.xpPerQuiz || 15);
+            showXPPopup(15);
         }
     } else {
-        // ОФФЛАЙН (Node.js)
+        // ОФФЛАЙН РЕЖИМ (Node.js)
         await fetch('/api/complete-lesson', { 
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }, 
@@ -450,48 +537,60 @@ async function saveLessonProgress() {
     renderLessonsSidebar(); 
     updatePlayerUI();
 }
-
 // ==========================================
 // 9. ФИКС ЧАТА (КНОПКА "v")
 // ==========================================
 function toggleChat() {
-    const chatWindow = document.getElementById('ai-chat');
-    if (chatWindow) {
-        // Если класс hidden есть — убираем его (показываем), если нет — добавляем (скрываем)
-        chatWindow.classList.toggle('hidden');
-        
-        // Маленький фикс для мобилок: скроллим сообщения вниз при открытии
-        if (!chatWindow.classList.contains('hidden')) {
-            const box = document.getElementById('chat-messages');
-            if (box) box.scrollTop = box.scrollHeight;
-        }
+    const chat = document.getElementById('ai-chat');
+    if (!chat) return;
+
+    if (chat.classList.contains('hidden')) {
+        chat.classList.remove('hidden');
+        const box = document.getElementById('chat-messages');
+        if (box) box.scrollTop = box.scrollHeight;
     } else {
-        console.error("Критическая ошибка: Элемент #ai-chat не найден в HTML!");
+        chat.classList.add('hidden');
     }
 }
 
-// Принудительно привязываем к окну, чтобы HTML-кнопки её видели 100%
-window.toggleChat = toggleChat;
+
 
 async function sendChatMessage() {
     const input = document.getElementById('chat-input'), box = document.getElementById('chat-messages');
     if (!input || !input.value.trim() || !box) return;
 
     const userText = input.value;
-    box.innerHTML += `<div class="flex justify-end mb-4"><div class="chat-bubble-user">${userText}</div></div>`;
-    input.value = ''; box.scrollTop = box.scrollHeight;
+    // Рисуем сообщение пользователя
+    box.innerHTML += `<div class="flex justify-end mb-4"><div class="chat-bubble-user text-sm">${userText}</div></div>`;
+    input.value = ''; 
+    box.scrollTop = box.scrollHeight;
 
+    // Показываем, что ИИ думает
     const typingId = 'typing-' + Date.now();
-    box.innerHTML += `<div id="${typingId}" class="flex justify-start mb-4 animate-pulse"><div class="chat-bubble-ai">Aura AI думает...</div></div>`;
+    box.innerHTML += `<div id="${typingId}" class="flex justify-start mb-4 animate-pulse"><div class="chat-bubble-ai italic">Aura AI думает...</div></div>`;
+    box.scrollTop = box.scrollHeight;
 
     try {
         const context = document.getElementById('player-lesson-title')?.innerText || "Общая тема";
-        const reply = await callGeminiDirect(userText, context);
         
-        document.getElementById(typingId).remove();
-        box.innerHTML += `<div class="flex justify-start mb-4 animate-slideUp"><div class="chat-bubble-ai">${reply}</div></div>`;
+        // !!! ВАЖНО: ВОТ ЭТУ СТРОКУ ТЫ ПРОПУСТИЛ !!!
+        const reply = await callGeminiDirect(userText, context); 
+        
+        // Теперь, когда ответ получен, удаляем индикатор загрузки
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+
+        // Рисуем красивый бабл от ИИ
+        box.innerHTML += `
+            <div class="flex justify-start mb-4 animate-slideUp">
+                <div class="chat-bubble-ai shadow-md leading-relaxed text-sm">
+                    ${reply.replace(/\n/g, '<br>')} 
+                </div>
+            </div>`;
     } catch (e) {
-        document.getElementById(typingId).innerText = "Ошибка ИИ. Проверьте ключ или интернет.";
+        console.error("Ошибка чата:", e);
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.innerText = "Ошибка ИИ. Проверьте ключ или интернет.";
     }
     box.scrollTop = box.scrollHeight;
 }
@@ -521,13 +620,104 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (IS_ONLINE) AuraSocial.init();
 });
 
-// ГЛОБАЛЬНЫЕ ЭКСПОРТЫ
+/**
+ * ЛОГИКА ФИНАЛЬНОЙ КНОПКИ (ТЕСТ ИЛИ ЗАВЕРШЕНИЕ)
+ */
+function handleCompleteAction() {
+    if (currentQuiz && currentQuiz.length > 0) {
+        // Если есть вопросы — открываем модалку теста
+        showQuiz();
+    } else {
+        // Если теста нет — просто сохраняем прогресс
+        saveLessonProgress();
+        alert("🎉 Урок пройден! Прогресс сохранен.");
+        location.href = 'market.html';
+    }
+}
+
+/**
+ * ОТРИСОВКА ТЕСТА В МОДАЛКЕ
+ */
+function showQuiz() {
+    const cont = document.getElementById('quiz-questions-container');
+    const modal = document.getElementById('quiz-modal');
+    if (!cont || !modal) return;
+
+    cont.innerHTML = currentQuiz.map((q, i) => `
+        <div class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2.5rem] mb-6 border border-slate-100 dark:border-white/5 shadow-sm animate-fade">
+            <h4 class="text-lg font-black mb-6 dark:text-white leading-tight">
+                <span class="text-aura-primary mr-2">#${i + 1}</span> ${q.question}
+            </h4>
+            <div class="grid gap-3">
+                ${q.options.map((opt, oi) => `
+                    <label class="flex items-center gap-4 p-4 bg-white dark:bg-slate-700 rounded-2xl cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all border border-slate-100 dark:border-white/5">
+                        <input type="radio" name="q-${i}" value="${oi}" class="w-5 h-5 accent-indigo-600">
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200">${opt}</span>
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+    
+    modal.classList.remove('hidden');
+}
+
+function showXPPopup(pts) {
+    const popup = document.createElement('div');
+    popup.className = "fixed top-10 left-1/2 -translate-x-1/2 z-[1000] bg-gradient-to-r from-aura-primary to-indigo-600 text-white px-8 py-4 rounded-full font-black shadow-2xl animate-slideUp flex items-center gap-3";
+    popup.innerHTML = `<i class="fa-solid fa-bolt text-yellow-400"></i> +${pts} XP ПОЛУЧЕНО!`;
+    
+    document.body.appendChild(popup);
+    
+    // Удаляем через 3 секунды
+    setTimeout(() => {
+        popup.classList.add('opacity-0', 'transition-all', 'duration-500');
+        setTimeout(() => popup.remove(), 500);
+    }, 3000);
+}
+
+function handleCompleteAction() {
+    if (currentQuiz && currentQuiz.length > 0) {
+        // Открываем модалку теста
+        document.getElementById('quiz-modal')?.classList.remove('hidden');
+        showQuiz(); // Вызываем отрисовку вопросов
+    } else {
+        // Просто завершаем урок
+        saveLessonProgress();
+        showXPPopup(10); // Показываем уведомление
+    }
+}
+
+// Отрисовка вопросов в модальном окне
+function showQuiz() {
+    const cont = document.getElementById('quiz-questions-container');
+    if (!cont) return;
+    
+    cont.innerHTML = currentQuiz.map((q, i) => `
+        <div class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2.5rem] mb-6 border border-slate-100 dark:border-white/5 animate-fade">
+            <h4 class="text-lg font-black mb-6 dark:text-white leading-tight">
+                <span class="text-aura-primary mr-2">#${i + 1}</span> ${q.question}
+            </h4>
+            <div class="grid gap-3">
+                ${q.options.map((opt, oi) => `
+                    <label class="flex items-center gap-4 p-4 bg-white dark:bg-slate-700 rounded-2xl cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all border border-slate-100 dark:border-white/5">
+                        <input type="radio" name="q-${i}" value="${oi}" class="w-5 h-5 accent-indigo-600">
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200">${opt}</span>
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+}
+
+// ==========================================
+// 11. ГЛОБАЛЬНЫЕ ЭКСПОРТЫ (ДЛЯ HTML)
+// ==========================================
 window.AuraRenderer = AuraRenderer;
 window.AuraSocial = AuraSocial;
+window.toggleTheme = () => AuraThemeEngine.toggle();
 window.toggleChat = toggleChat;
 window.sendChatMessage = sendChatMessage;
-window.toggleTheme = () => AuraThemeEngine.toggle();
-window.closeCourse = closeCourse;
+window.handleCourseClick = handleCourseClick;
 window.loadLesson = loadLesson;
+window.showQuiz = showQuiz;
+window.closeQuiz = () => document.getElementById('quiz-modal').classList.add('hidden');
 window.validateQuiz = validateQuiz;
+window.handleCompleteAction = handleCompleteAction;
 window.handleMarketAction = handleMarketAction;
