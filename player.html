@@ -213,7 +213,7 @@
         </button>
 
         <!-- Окно чата (Hidden by default) -->
-       <div id="ai-chat" class="hidden fixed bottom-24 right-4 left-4 md:left-auto md:w-96 max-h-[60vh] md:max-h-[500px] bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-200 dark:border-white/5 flex flex-col overflow-hidden z-[200]">
+    <div id="ai-chat" class="hidden fixed bottom-24 right-4 left-4 md:left-auto md:w-96 max-h-[60vh] bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/5 flex flex-col overflow-hidden z-[200] animate-slideUp">
             <!-- Header чата -->
             <div class="p-6 bg-slate-900 dark:bg-slate-800 text-white flex justify-between items-center border-b dark:border-slate-700">
                 <div class="flex items-center gap-3">
@@ -221,9 +221,10 @@
                     <span class="font-black text-[10px] uppercase tracking-widest italic leading-none">Aura AI Assistant</span>
                 </div>
                 <!-- ШЕРЛОК: Это та самая кнопка сворачивания! -->
-                <button onclick="toggleChat()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-all">
-                    <i class="fa-solid fa-chevron-down opacity-50"></i>
-                </button>
+              <!-- Внутри шапки чата (ai-chat) -->
+<button onclick="toggleChat()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition-all">
+    <i class="fa-solid fa-chevron-down opacity-50"></i>
+</button>
             </div>
             
             <!-- Сообщения -->
