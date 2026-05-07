@@ -380,9 +380,32 @@ async function validateQuiz() {
 }
 
 async function saveLessonProgress() {
-    if (IS_ONLINE) return;
-    await fetch('/api/complete-lesson', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ courseId: currentCourse.id, lessonId: currentLessonId }) });
-    syncSystemData();
+    if (!currentCourse.completedLessons) currentCourse.completedLessons = [];
+    
+    if (!currentCourse.completedLessons.includes(currentLessonId)) {
+        currentCourse.completedLessons.push(currentLessonId);
+    }
+    
+    if (IS_ONLINE) {
+        // 1. Сохраняем локально для мгновенного отклика
+        localStorage.setItem('aura_progress_' + currentCourse.id, JSON.stringify(currentCourse.completedLessons));
+        
+        // 2. Если залогинен — отправляем XP и статус в Cloud
+        if (currentUser) {
+            await AuraSocial.addXP(AURA_UI.xpPerQuiz || 10);
+            // Можно добавить сохранение прогресса конкретно в коллекцию 'users/uid/progress'
+        }
+    } else {
+        // ОФФЛАЙН (Node.js)
+        await fetch('/api/complete-lesson', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ courseId: currentCourse.id, lessonId: currentLessonId }) 
+        });
+    }
+    
+    renderLessonsSidebar(); 
+    updatePlayerUI();
 }
 
 // ==========================================
