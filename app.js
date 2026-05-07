@@ -245,9 +245,22 @@ function renderLibraryGrid(courses) {
     const grid = document.getElementById('courses-grid');
     if (!grid) return;
     if (!courses.length) { grid.innerHTML = `<div class="col-span-full py-20 text-center opacity-30 font-black uppercase italic tracking-widest">Библиотека пуста</div>`; return; }
-    grid.innerHTML = courses.map(course => `<div class="course-card bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm animate-fade"><div onclick="openCourse('${encodeURIComponent(JSON.stringify(course))}')" class="cursor-pointer"><h3 class="text-2xl font-black dark:text-white mb-2 uppercase tracking-tighter leading-none">${course.title || 'Курс'}</h3><p class="text-[10px] font-black uppercase text-slate-400 mb-6">Автор: ${course.author || '...'}</p><div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden shadow-inner"><div class="bg-indigo-600 h-full transition-all duration-1000" style="width: 0%"></div></div></div></div>`).join('');
+    grid.innerHTML = courses.map(course => `<div class="course-card bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm animate-fade"><div grid.innerHTML = courses.map(course => `
+    <div class="course-card ... shadow-sm animate-fade">
+        <div onclick="handleCourseClick('${course.id}')" class="cursor-pointer">
+            <h3 class="text-2xl ...">${course.title || 'Курс'}</h3>
+            ...
+        </div>
+    </div>`).join(''); class="cursor-pointer"><h3 class="text-2xl font-black dark:text-white mb-2 uppercase tracking-tighter leading-none">${course.title || 'Курс'}</h3><p class="text-[10px] font-black uppercase text-slate-400 mb-6">Автор: ${course.author || '...'}</p><div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden shadow-inner"><div class="bg-indigo-600 h-full transition-all duration-1000" style="width: 0%"></div></div></div></div>`).join('');
 }
 
+function handleCourseClick(courseId) {
+    const course = allCourses.find(c => c.id === courseId) || marketCourses.find(c => c.id === courseId);
+    if (course) {
+        openCourse(encodeURIComponent(JSON.stringify(course)));
+    }
+}
+window.handleCourseClick = handleCourseClick;
 function renderMarketGrid(courses) {
     const grid = document.getElementById('market-grid');
     if (!grid) return;
@@ -283,22 +296,39 @@ function closeCourse() {
 }
 
 function loadLesson(id) {
-    const lesson = currentCourse.lessons.find(l => l.id === id);
+    const lesson = currentCourse.lessons.find(l => l.id == id);
     if (!lesson) return;
-    currentLessonId = id; currentQuiz = lesson.quiz || [];
-    if (document.getElementById('player-lesson-title')) document.getElementById('player-lesson-title').innerText = lesson.title;
+    
+    currentLessonId = id; 
+    currentQuiz = lesson.quiz || [];
+    
+    if (document.getElementById('player-lesson-title')) 
+        document.getElementById('player-lesson-title').innerText = lesson.title;
+    
     renderLessonsSidebar();
+    
     const container = document.getElementById('content-container');
     if (!container) return;
 
     if (IS_ONLINE) {
-        // ОНЛАЙН: Рендерим блоки напрямую из Firestore
-        container.innerHTML = AuraRenderer.generateHTML(lesson.blocks || lesson.htmlBody || "");
+        // ОНЛАЙН: Используем ту же обертку, что и в Desktop для aura-content.css
+        container.innerHTML = `
+            <div class="aura-content-body">
+                ${AuraRenderer.generateHTML(lesson.blocks || lesson.htmlBody || "")}
+            </div>`;
     } else {
-        // ОФФЛАЙН: Грузим из локального сервера
+        // ОФФЛАЙН (Localhost):
         const url = `/content/user/${currentCourse.folder}/${lesson.content}`;
-        if (url.toLowerCase().endsWith('.mp4')) container.innerHTML = `<video controls class="w-full h-full bg-black"><source src="${url}" type="video/mp4"></video>`;
-        else container.innerHTML = `<iframe id="content-frame" src="${url}" class="w-full h-full border-none bg-white dark:bg-slate-900 animate-fade"></iframe>`;
+        container.innerHTML = `<iframe id="content-frame" src="${url}" class="w-full h-full border-none bg-white dark:bg-slate-900 animate-fade"></iframe>`;
+        
+        // Прокидываем тему в iframe (как в Desktop)
+        setTimeout(() => {
+            const frame = document.getElementById('content-frame');
+            if (frame && frame.contentWindow) {
+                const isDark = document.documentElement.classList.contains('dark');
+                frame.contentWindow.document.documentElement.classList.toggle('dark', isDark);
+            }
+        }, 150);
     }
     updatePlayerUI();
 }
