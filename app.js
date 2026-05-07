@@ -244,14 +244,26 @@ function switchTab(tab) {
 function renderLibraryGrid(courses) {
     const grid = document.getElementById('courses-grid');
     if (!grid) return;
-    if (!courses.length) { grid.innerHTML = `<div class="col-span-full py-20 text-center opacity-30 font-black uppercase italic tracking-widest">Библиотека пуста</div>`; return; }
-    grid.innerHTML = courses.map(course => `<div class="course-card bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm animate-fade"><div grid.innerHTML = courses.map(course => `
-    <div class="course-card ... shadow-sm animate-fade">
-        <div onclick="handleCourseClick('${course.id}')" class="cursor-pointer">
-            <h3 class="text-2xl ...">${course.title || 'Курс'}</h3>
-            ...
+    if (!courses.length) { 
+        grid.innerHTML = `<div class="col-span-full py-20 text-center opacity-30 font-black uppercase italic tracking-widest">Библиотека пуста</div>`; 
+        return; 
+    }
+
+    grid.innerHTML = courses.map(course => `
+        <div class="course-card bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm animate-fade">
+            <div onclick="handleCourseClick('${course.id}')" class="cursor-pointer">
+                <h3 class="text-2xl font-black dark:text-white mb-2 uppercase tracking-tighter leading-none">
+                    ${course.title || 'Курс'}
+                </h3>
+                <p class="text-[10px] font-black uppercase text-slate-400 mb-6">
+                    Автор: ${course.author || '...'}
+                </p>
+                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden shadow-inner">
+                    <div class="bg-indigo-600 h-full transition-all duration-1000" style="width: 0%"></div>
+                </div>
+            </div>
         </div>
-    </div>`).join(''); class="cursor-pointer"><h3 class="text-2xl font-black dark:text-white mb-2 uppercase tracking-tighter leading-none">${course.title || 'Курс'}</h3><p class="text-[10px] font-black uppercase text-slate-400 mb-6">Автор: ${course.author || '...'}</p><div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden shadow-inner"><div class="bg-indigo-600 h-full transition-all duration-1000" style="width: 0%"></div></div></div></div>`).join('');
+    `).join('');
 }
 
 function handleCourseClick(courseId) {
@@ -339,7 +351,7 @@ function renderLessonsSidebar() {
     list.innerHTML = currentCourse.lessons.map((l, i) => {
         const active = currentLessonId === l.id;
         const done = currentCourse.completedLessons ? currentCourse.completedLessons.includes(l.id) : false;
-        return `<button onclick="loadLesson(${l.id})" class="w-full text-left p-5 rounded-2xl transition-all flex items-center justify-between font-bold text-sm ${active ? 'bg-indigo-600 text-white shadow-xl' : 'bg-white dark:bg-slate-800 dark:text-slate-300 shadow-sm'}">
+     return `<button onclick="loadLesson('${l.id}')" class="w-full text-left p-5 rounded-2xl transition-all flex items-center justify-between font-bold text-sm ${active ? 'bg-indigo-600 text-white shadow-xl' : 'bg-white dark:bg-slate-800 dark:text-slate-300 shadow-sm'}">
             <span class="truncate">${i + 1}. ${l.title}</span>
             <i class="fa-solid ${done ? 'fa-check-circle text-green-500' : 'fa-play-circle'} opacity-50"></i>
         </button>`;
