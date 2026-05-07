@@ -132,6 +132,22 @@ const AuraSocial = {
     }
 };
 
+
+// Настройка ИИ для работы ПРЯМО в браузере (без сервера)
+const GEMINI_KEY = "AIzaSyD8q-cw7yAQbrakqIWVQjldhOlezPQAuYQ"; // Твой ключ
+
+async function callGeminiDirect(message, context) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            contents: [{ parts: [{ text: `Ты — Aura AI Tutor. Тема урока: ${context}. Вопрос: ${message}` }] }]
+        })
+    });
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
+}
 // ==========================================
 // 4. ЕДИНОЕ ЯДРО РЕНДЕРИНГА (PRO)
 // ==========================================
