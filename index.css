@@ -150,9 +150,20 @@
 }
 
 /* 5. ИИ-ТЬЮТОР (AI CHAT DESIGN) */
+/* Полная адаптация чата */
 #ai-chat {
-    display: flex;
-    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 768px) {
+    /* На мобилках чат не должен быть шире экрана */
+    #ai-chat {
+        width: calc(100% - 2rem) !important;
+        right: 1rem !important;
+        left: 1rem !important;
+        bottom: 5rem !important;
+        max-height: 70vh !important;
+    }
 }
 
 #chat-messages {
