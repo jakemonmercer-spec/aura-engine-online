@@ -441,15 +441,35 @@ async function saveLessonProgress() {
 // ==========================================
 function toggleChat() { 
     const chat = document.getElementById('ai-chat');
-    if (chat) chat.classList.toggle('hidden'); 
+    if (chat) {
+        // Если чат открывается, убеждаемся что он не перекрывает всё на мобилках
+        chat.classList.toggle('hidden');
+        console.log("Чат переключен");
+    }
 }
+window.toggleChat = toggleChat;
 
-function sendChatMessage() {
+async function sendChatMessage() {
     const input = document.getElementById('chat-input'), box = document.getElementById('chat-messages');
     if (!input || !input.value.trim() || !box) return;
-    box.innerHTML += `<div class="flex justify-end mb-4 animate-fade"><div class="bg-indigo-100 dark:bg-slate-800 p-4 rounded-2xl text-sm font-bold shadow-sm">${input.value}</div></div>`;
+
+    const userText = input.value;
+    box.innerHTML += `<div class="flex justify-end mb-4"><div class="chat-bubble-user">${userText}</div></div>`;
     input.value = ''; box.scrollTop = box.scrollHeight;
-    setTimeout(() => { box.innerHTML += `<div class="flex justify-start mb-4 animate-fade"><div class="bg-indigo-600 text-white p-4 rounded-3xl rounded-tl-none text-sm italic shadow-md">Aura AI: К вашим услугам! Анализирую материалы модуля...</div></div>`; box.scrollTop = box.scrollHeight; }, 700);
+
+    const typingId = 'typing-' + Date.now();
+    box.innerHTML += `<div id="${typingId}" class="flex justify-start mb-4 animate-pulse"><div class="chat-bubble-ai">Aura AI думает...</div></div>`;
+
+    try {
+        const context = document.getElementById('player-lesson-title')?.innerText || "Общая тема";
+        const reply = await callGeminiDirect(userText, context);
+        
+        document.getElementById(typingId).remove();
+        box.innerHTML += `<div class="flex justify-start mb-4 animate-slideUp"><div class="chat-bubble-ai">${reply}</div></div>`;
+    } catch (e) {
+        document.getElementById(typingId).innerText = "Ошибка ИИ. Проверьте ключ или интернет.";
+    }
+    box.scrollTop = box.scrollHeight;
 }
 
 // ==========================================
