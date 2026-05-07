@@ -386,7 +386,6 @@ function updatePlayerUI() {
         btn.onclick = () => saveLessonProgress();
     }
 }
-
 // ==========================================
 // 8. ACTIONS & QUIZ
 // ==========================================
