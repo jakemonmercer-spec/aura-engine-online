@@ -9,10 +9,12 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="aura-content.css">
+    
     <!-- ТЕХНОЛОГИЧЕСКИЙ СТЕК -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <script src="https://www.youtube.com/iframe_api"></script>
     <!-- FIREBASE SDK (COMPAT) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -43,11 +45,13 @@
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; overflow-x: hidden; }
         .space-font { font-family: 'Orbitron', sans-serif; }
+        
         .aura-grid-bg {
             background-size: 60px 60px;
             background-image: linear-gradient(to right, rgba(79, 70, 229, 0.05) 1px, transparent 1px),
                               linear-gradient(to bottom, rgba(79, 70, 229, 0.05) 1px, transparent 1px);
         }
+        
         .glass-header {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px);
@@ -62,24 +66,24 @@
 <body class="bg-slate-50 text-slate-900 dark:bg-aura-dark dark:text-slate-100 min-h-screen aura-grid-bg">
 
     <!-- =========================================================
-         HEADER: UNITY CONTROL
+         HEADER: UNITY CONTROL (FIXED HEIGHT h-20)
          ========================================================= -->
-    <header class="h-24 sticky top-0 z-[100] glass-header">
-        <div class="max-w-7xl mx-auto h-full px-8 flex justify-between items-center">
+    <header class="h-20 sticky top-0 z-[100] glass-header flex items-center">
+        <div class="max-w-7xl mx-auto w-full px-6 md:px-8 flex justify-between items-center">
             <div class="flex items-center gap-4 cursor-pointer" onclick="location.href='index.html'">
-                <div class="w-12 h-12 bg-aura-primary rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-indigo-500/40">
-                    <i class="fa-solid fa-atom text-2xl"></i>
+                <div class="w-10 h-10 bg-aura-primary rounded-xl flex items-center justify-center text-white shadow-2xl shadow-indigo-500/40">
+                    <i class="fa-solid fa-atom text-xl"></i>
                 </div>
-                <h1 class="text-3xl font-black tracking-tighter italic space-font text-aura-primary dark:text-white leading-none">AURA.</h1>
+                <h1 class="text-2xl font-black tracking-tighter italic space-font text-aura-primary dark:text-white leading-none">AURA.</h1>
             </div>
 
-            <div class="flex items-center gap-6">
-                <button onclick="toggleTheme()" class="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-all border border-slate-200 dark:border-white/10">
-                    <i id="theme-icon" class="fa-solid fa-moon text-xl"></i>
+            <div class="flex items-center gap-4">
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-all border border-slate-200 dark:border-white/10">
+                    <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
                 </button>
                 
                 <div id="auth-btn-container" class="animate-fade">
-                    <button onclick="AuraSocial.login()" class="bg-aura-primary text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl hover:scale-105 transition-all">
+                    <button onclick="AuraSocial.login()" class="bg-aura-primary text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase shadow-xl hover:scale-105 transition-all">
                         Войти в Хаб
                     </button>
                 </div>
@@ -88,35 +92,52 @@
     </header>
 
     <!-- =========================================================
-         HERO SECTION: LANDING
+         HERO SECTION: LANDING & LIVE DASHBOARD
          ========================================================= -->
-    <main class="max-w-7xl mx-auto px-8 py-20 lg:py-32 grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
+    <main class="max-w-7xl mx-auto px-6 md:px-8 py-16 lg:py-24 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
         
-        <!-- Описание системы -->
-        <div class="lg:col-span-7 space-y-12 animate-slideUp">
+        <!-- Левая часть: Описание и Статистика -->
+        <div class="lg:col-span-7 space-y-10 animate-slideUp">
             <div class="space-y-6">
                 <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-indigo-500/10 text-aura-indigo text-[10px] font-black uppercase tracking-[0.3em]">
-                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></span> Live Social Learning
+                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></span> Live Hub Statistics
                 </div>
-                <h2 class="text-7xl md:text-8xl font-black tracking-tighter leading-[0.85] dark:text-white">
-                    Знания. <br> <span class="text-aura-primary italic">Без границ.</span>
+                <h2 class="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] dark:text-white">
+                    Знания. <br> <span class="text-aura-primary italic text-5xl md:text-7xl">Без границ.</span>
                 </h2>
-                <p class="text-2xl text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed font-medium">
-                    Центральный узел экосистемы Aura. Следи за своим прогрессом, изучай курсы онлайн и становись легендой в глобальном рейтинге.
+                <p class="text-xl text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed font-medium">
+                    Следи за прогрессом, изучай курсы и становись лидером в глобальном рейтинге Aura.
                 </p>
             </div>
 
-            <div class="flex flex-wrap gap-6">
-                <a href="market.html" class="bg-aura-primary text-white px-12 py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-500/40 hover:bg-indigo-700 transition-all block">
+            <!-- LIVE DASHBOARD (IDs для app.js) -->
+            <div class="grid grid-cols-3 gap-4 max-w-md">
+                <div class="bg-white dark:bg-white/5 p-5 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm">
+                    <span id="stat-total-courses" class="block text-3xl font-black text-aura-primary">0</span>
+                    <span class="text-[9px] uppercase font-black opacity-40 tracking-widest">Курсов</span>
+                </div>
+                <div class="bg-white dark:bg-white/5 p-5 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm">
+                    <span id="stat-total-lessons" class="block text-3xl font-black text-emerald-500">0</span>
+                    <span class="text-[9px] uppercase font-black opacity-40 tracking-widest">Уроков</span>
+                </div>
+                <div class="bg-white dark:bg-white/5 p-5 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm">
+                    <span id="stat-overall-percent" class="block text-3xl font-black text-yellow-500">0%</span>
+                    <span class="text-[9px] uppercase font-black opacity-40 tracking-widest">Прогресс</span>
+                </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="flex flex-wrap gap-6 pt-4">
+                <a href="market.html" class="bg-aura-primary text-white px-10 py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-widest shadow-2xl shadow-indigo-500/40 hover:bg-indigo-700 transition-all block">
                     Открыть Магазин
                 </a>
-                <a href="https://github.com/jakemonmercer-spec/aura-engine-online" class="px-12 py-6 rounded-[2.5rem] border-2 border-slate-200 dark:border-white/10 font-black text-xs uppercase tracking-widest hover:bg-white/5 transition-all flex items-center gap-3">
-                    <i class="fa-brands fa-github text-xl"></i> Repository
+                <a href="https://github.com/jakemonmercer-spec/aura-engine-online" class="px-10 py-5 rounded-[2rem] border-2 border-slate-200 dark:border-white/10 font-black text-[11px] uppercase tracking-widest hover:bg-white/5 transition-all flex items-center gap-3">
+                    <i class="fa-brands fa-github text-lg"></i> Repository
                 </a>
             </div>
         </div>
 
-        <!-- Leaderboard (XP Хаб) -->
+        <!-- Правая часть: Leaderboard (XP Хаб) -->
         <div class="lg:col-span-5 animate-fade">
             <div class="bg-white dark:bg-slate-900/50 p-10 rounded-[4rem] border border-slate-200 dark:border-white/5 shadow-2xl relative overflow-hidden">
                 <div class="flex justify-between items-center mb-10">
@@ -126,7 +147,7 @@
                     </div>
                 </div>
                 
-                <!-- Контейнер для лидеров из app.js -->
+                <!-- Контейнер для лидеров (наполняется через app.js) -->
                 <div id="leaderboard-container" class="space-y-4">
                     <div class="flex justify-center py-20 opacity-20"><i class="fa-solid fa-spinner fa-spin text-4xl"></i></div>
                 </div>
@@ -138,22 +159,22 @@
         </div>
     </main>
 
-    <!-- Секция Промо -->
-    <section class="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-3 gap-8 pb-40">
+    <!-- PROMO SECTION -->
+    <section class="max-w-7xl mx-auto px-6 md:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 pb-32">
         <div class="p-10 rounded-[3rem] bg-white dark:bg-slate-900/30 border border-slate-100 dark:border-white/5 hover:border-aura-primary transition-all group">
             <i class="fa-solid fa-shield-halved text-4xl text-aura-primary mb-6 block group-hover:scale-110 transition-transform"></i>
             <h4 class="text-xl font-black uppercase tracking-tighter mb-4">Desktop Pro</h4>
-            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Для тех, кому нужна полная автономность и работа без интернета. Скачай и забудь про лаги.</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Полная автономность и работа без интернета. Скачай и забудь про лаги.</p>
         </div>
         <div class="p-10 rounded-[3rem] bg-white dark:bg-slate-900/30 border border-slate-100 dark:border-white/5 hover:border-aura-primary transition-all group">
             <i class="fa-solid fa-bolt-lightning text-4xl text-yellow-500 mb-6 block group-hover:scale-110 transition-transform"></i>
             <h4 class="text-xl font-black uppercase tracking-tighter mb-4">Cloud Speed</h4>
-            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Мгновенный доступ к превью любого курса прямо из браузера. Никаких ожиданий.</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Мгновенный доступ к любому курсу прямо из браузера. Без ожидания.</p>
         </div>
         <div class="p-10 rounded-[3rem] bg-white dark:bg-slate-900/30 border border-slate-100 dark:border-white/5 hover:border-aura-primary transition-all group">
             <i class="fa-solid fa-chart-line text-4xl text-emerald-500 mb-6 block group-hover:scale-110 transition-transform"></i>
             <h4 class="text-xl font-black uppercase tracking-tighter mb-4">Global XP</h4>
-            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Твои достижения сохраняются в общем реестре. Стань мастером и попади в ТОП.</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Твои достижения сохраняются в облаке. Попади в мировой ТОП.</p>
         </div>
     </section>
 
