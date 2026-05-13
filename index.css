@@ -1,77 +1,195 @@
 /**
  * =========================================================
- * AURA ENGINE PRO - PLAYER & SOCIAL UI v5.0
+ * AURA ENGINE PRO - MASTER UI CORE v6.5 (UNIFIED DRAWER)
  * =========================================================
- * ПУТЬ: public/index.css (GitHub Root)
  * 🛡️ АВТОР: Aura Architect
- * 🚀 СТАТУС: 100% FULL SOURCE CODE. НИКАКИХ СОКРАЩЕНИЙ.
- * ⚡ ОСОБЕННОСТИ: 
- *    - Social Hub Design: Стили для лидерборда, XP-баров и профилей.
- *    - Card Architecture: Ультра-закругленные карточки (3rem+) с тенями.
- *    - Player Workspace: Стили для сайдбара и контент-зоны обучения.
- *    - Interactive Elements: Стили квизов, чата и навигации.
+ * 🚀 СТАТУС: 100% FULL SOURCE CODE. (FIXED DUPLICATES)
+ * 📱 ПОДДЕРЖКА: Единая логика Drawer для всех разрешений.
  */
 
-/* 1. СТИЛИ КАРТОЧЕК КУРСОВ (GRID ITEMS) */
-.course-card {
-    position: relative;
-    overflow: hidden;
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    background: var(--aura-card-light);
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;600;700;900&display=swap');
+
+/* 1. ПЕРЕМЕННЫЕ И ТЕМЫ */
+:root {
+    --aura-primary: #4f46e5;
+    --aura-primary-glow: rgba(79, 70, 229, 0.4);
+    --aura-indigo: #6366f1;
+    --aura-accent: #f43f5e;
+    --aura-success: #10b981;
+    --aura-bg-light: #f8fafc;
+    --aura-bg-dark: #020617;
+    --aura-card-light: #ffffff;
+    --aura-card-dark: #0f172a;
+    --aura-border-light: #f1f5f9;
+    --aura-border-dark: #1e293b;
+    --aura-text-light: #1e293b;
+    --aura-text-dark: #f8fafc;
+    --sidebar-width: 320px;
 }
 
-.dark .course-card {
-    background: var(--aura-card-dark);
+/* 2. БАЗОВЫЕ СБРОСЫ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.course-card:hover {
-    transform: translateY(-12px) scale(1.02);
-    box-shadow: 0 40px 70px -15px rgba(79, 70, 229, 0.3);
-    z-index: 10;
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--aura-bg-light);
+    color: var(--aura-text-light);
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.4s ease, color 0.4s ease;
+    overflow-x: hidden;
 }
 
-.dark .course-card:hover {
-    box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.7);
+.dark body {
+    background-color: var(--aura-bg-dark);
+    color: var(--aura-text-dark);
 }
 
-/* Прогресс-бар внутри карточки */
-.progress-container {
+.space-font { font-family: 'Orbitron', sans-serif; }
+
+/* 3. ГЛОБАЛЬНЫЕ АНИМАЦИИ */
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+.animate-slideUp { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* 4. ПЛЕЕР: СТРУКТУРА (ЕДИНАЯ ДЛЯ ВСЕХ) */
+.player-grid {
+    display: block; /* Контент всегда на 100% ширины */
     width: 100%;
-    height: 8px;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 1.5rem;
+    position: relative;
 }
 
-.dark .progress-container {
-    background: rgba(255, 255, 255, 0.05);
+/* 5. SIDEBAR: ШТОРКА (DRAWER) */
+aside#player-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: calc(-1 * var(--sidebar-width)) !important; /* Спрятан влево */
+    width: var(--sidebar-width) !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    background: var(--aura-card-light);
+    border-right: 1px solid var(--aura-border-light);
+    padding: 2rem !important;
+    transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: left;
+    overflow-y: auto;
 }
 
-.progress-fill {
+.dark aside#player-sidebar {
+    background: var(--aura-card-dark) !important;
+    border-right-color: var(--aura-border-dark);
+}
+
+/* СОСТОЯНИЕ "ОТКРЫТО" */
+aside#player-sidebar.active {
+    left: 0 !important; /* Выезжает на экран */
+    box-shadow: 20px 0 80px rgba(0, 0, 0, 0.4);
+}
+
+/* 6. СПИСОК УРОКОВ ВНУТРИ ШТОРКИ */
+#lessons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+#lessons-list button {
+    width: 100%;
+    text-align: left;
+    padding: 1.25rem;
+    border-radius: 1.25rem;
+    background: var(--aura-bg-light);
+    border: 1px solid var(--aura-border-light);
+    color: var(--aura-text-light);
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dark #lessons-list button {
+    background: rgba(255,255,255,0.02);
+    border-color: var(--aura-border-dark);
+    color: #94a3b8;
+}
+
+#lessons-list button.active {
+    background: var(--aura-primary);
+    color: white !important;
+    border-color: var(--aura-primary);
+    box-shadow: 0 10px 25px -5px var(--aura-primary-glow);
+}
+
+/* 7. КОНТЕНТ-КОНТЕЙНЕР (НА ВЕСЬ ЭКРАН) */
+#content-container {
+    width: 100% !important;
     height: 100%;
-    background: linear-gradient(90deg, var(--aura-primary), var(--aura-indigo));
-    transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
-    box-shadow: 0 0 10px var(--aura-primary-glow);
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: var(--aura-bg-light);
+      padding-bottom: 120px; 
 }
 
-/* 2. ЛИДЕРБОРД И СОЦИАЛЬНЫЙ ХАБ */
-#leaderboard-container {
-    scrollbar-width: none;
+.dark #content-container {
+    background: var(--aura-bg-dark);
 }
 
-#leaderboard-container::-webkit-scrollbar {
-    display: none;
+/* Адаптивные отступы для десктопов (чтобы текст не растягивался на 2 метра) */
+@media (min-width: 1024px) {
+    #content-container {
+        padding: 4rem 15% !important; 
+    }
+}
+#ai-chat.hidden {
+    display: none !important;
+}
+/* 8. ИИ-ЧАТ */
+#ai-chat {
+    position: fixed;
+    width: 380px;
+    right: 2rem;
+    bottom: 6rem;
+    z-index: 1000;
+    background: var(--aura-card-light);
+    border: 1px solid var(--aura-border-light);
+    border-radius: 2rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-.leader-item {
-    transition: all 0.3s ease;
+.dark #ai-chat {
+    background: var(--aura-card-dark);
+    border-color: var(--aura-border-dark);
 }
 
-.leader-item:hover {
-    background: rgba(79, 70, 229, 0.1);
-    transform: translateX(5px);
+@media (max-width: 768px) {
+    #ai-chat {
+        width: calc(100% - 2rem);
+        left: 1rem;
+        bottom: 5.5rem;
+    }
 }
+
+/* 9. КАРТОЧКИ И ДИЗАЙН */
+.course-card {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: var(--aura-card-light);
+    border-radius: 2.5rem;
+    border: 1px solid var(--aura-border-light);
+}
+.dark .course-card { background: var(--aura-card-dark); border-color: var(--aura-border-dark); }
+.course-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px -15px rgba(79, 70, 229, 0.3); }
 
 .xp-text {
     font-family: 'Orbitron', sans-serif;
@@ -81,200 +199,121 @@
     font-weight: 900;
 }
 
-/* 3. ИНТЕРФЕЙС ПЛЕЕРА (LEARNING WORKSPACE) */
-.w-85 {
-    width: 340px;
+/* 10. КНОПКИ УПРАВЛЕНИЯ (ФУТЕР) */
+footer {
+    height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    background: var(--aura-glass-bg);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--aura-border-light);
+    z-index: 1000; /* Добавь эту строку */
+    position: relative; /* Чтобы z-index сработал */
 }
 
-#lessons-list button {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid transparent;
-}
-
-#lessons-list button:hover {
-    background: rgba(79, 70, 229, 0.05);
-    border-color: rgba(79, 70, 229, 0.2);
-}
-
-.dark #lessons-list button:hover {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-#lessons-list button.active {
-    background: var(--aura-primary);
-    color: white;
-    box-shadow: 0 10px 20px -5px var(--aura-primary-glow);
-}
-
-/* 4. МОДУЛЬ ТЕСТИРОВАНИЯ (QUIZ UI) */
-#quiz-questions-container label {
-    transition: all 0.2s ease;
-    user-select: none;
-}
-
-#quiz-questions-container input[type="radio"] {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
-    border: 2px solid #cbd5e1;
-    border-radius: 50%;
-    outline: none;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.2s ease;
-    background: white;
-}
-
-.dark #quiz-questions-container input[type="radio"] {
-    background: #1e293b;
-    border-color: #334155;
-}
-
-#quiz-questions-container input[type="radio"]:checked {
-    border-color: var(--aura-primary);
-    background: var(--aura-primary);
-}
-
-#quiz-questions-container input[type="radio"]:checked::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
-    background: white;
-    border-radius: 50%;
-}
-
-/* 5. ИИ-ТЬЮТОР (AI CHAT DESIGN) */
-/* Полная адаптация чата */
-#ai-chat {
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
+.dark footer { border-top-color: var(--aura-border-dark); }
 
 @media (max-width: 768px) {
-    /* На мобилках чат не должен быть шире экрана */
-    #ai-chat {
-        width: calc(100% - 2rem) !important;
-        right: 1rem !important;
-        left: 1rem !important;
-        bottom: 5rem !important;
-        max-height: 70vh !important;
-    }
-}
-
-#chat-messages {
-    scrollbar-width: thin;
-    scrollbar-color: var(--aura-primary) transparent;
-}
-
-.chat-bubble-user {
-    background: #eef2ff;
-    color: #1e293b;
-    border-radius: 1.5rem 1.5rem 0 1.5rem;
-    padding: 1rem;
-    font-weight: 700;
-    max-width: 85%;
-    margin-left: auto;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.dark .chat-bubble-user {
-    background: #1e293b;
-    color: #f8fafc;
-    border-color: rgba(255,255,255,0.05);
-}
-
-.chat-bubble-ai {
-    background: linear-gradient(135deg, var(--aura-primary), var(--aura-indigo));
-    color: white;
-    border-radius: 1.5rem 1.5rem 1.5rem 0;
-    padding: 1.25rem;
-    font-weight: 500;
-    max-width: 90%;
-    box-shadow: 0 10px 20px -5px var(--aura-primary-glow);
-}
-
-/* 6. ГЛОБАЛЬНЫЕ ЭФФЕКТЫ ТЕМ (DJANGO UNITY) */
-html.dark .glass-ui {
-    background: rgba(15, 23, 42, 0.7);
-    border-color: rgba(255, 255, 255, 0.05);
-}
-
-/* 7. АДАПТИВНОСТЬ И ФИКСЫ */
-@media (max-width: 1024px) {
-    .w-85 {
-        width: 100%;
-        max-height: 250px;
-    }
-    
-    #player-view .flex-1 {
-        flex-direction: column;
-    }
-}
-
-/* 8. ИНДИКАТОРЫ И БЕЙДЖИ */
-.status-tag {
-    font-size: 10px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 4px 12px;
-    border-radius: 20px;
-}
-
-.xp-badge-premium {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-}
-
-/* 9. ФОНОВЫЕ СЕТКИ */
-.aura-grid-bg {
-    background-size: 50px 50px;
-    background-image: 
-        linear-gradient(to right, rgba(79, 70, 229, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(79, 70, 229, 0.03) 1px, transparent 1px);
-}
-
-.dark .aura-grid-bg {
-    background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-}
-
-/* Фикс сетки для iPhone SE и мобилок */
-@media (max-width: 768px) {
-    .player-grid {
-        display: flex;
-        flex-direction: column; /* Сайдбар будет сверху, контент снизу */
-        height: auto;
-        overflow-y: auto;
-    }
-    
-    .player-grid aside {
-        width: 100%;
-        height: 200px; /* Ограничиваем список уроков */
-        border-right: none;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    #content-container {
-        padding: 20px 15px !important;
-    }
-
-    /* Делаем кнопку завершения на весь экран снизу */
     footer {
         flex-direction: column;
         height: auto;
-        padding: 20px;
-        gap: 15px;
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+}
+
+/* СКРОЛЛБАРЫ */
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(var(--aura-primary-rgb), 0.2); border-radius: 10px; }
+
+/* --- ГЛОБАЛЬНЫЙ АДАПТИВНЫЙ ХЕДЕР (FIX) --- */
+header.glass-nav, header.glass-header {
+    height: 5rem !important; /* Фиксируем высоту 80px */
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--aura-border-light);
+    padding: 0 1.5rem;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.dark header.glass-nav, .dark header.glass-header {
+    background: rgba(15, 23, 42, 0.8);
+    border-bottom-color: var(--aura-border-dark);
+}
+
+/* Фикс логотипа и контейнера */
+header .max-w-7xl {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Убираем "летание" текста */
+header h1 {
+    font-size: 1.25rem !important;
+    margin-bottom: 0 !important;
+    line-height: 1 !important;
+}
+
+header p {
+    font-size: 8px !important;
+    margin-top: 2px !important;
+}
+
+/* Адаптация под маленькие экраны (320px) */
+@media (max-width: 480px) {
+    header.glass-nav, header.glass-header {
+        padding: 0 0.75rem;
+        height: 4.5rem !important; /* На мобилке чуть ниже - 72px */
+    }
+    
+    header .hidden.sm\:block, 
+    header .hidden.md\:block {
+        display: none !important; /* Жестко скрываем лишнее */
     }
 
-    #complete-btn {
-        width: 100%;
-        justify-content: center;
+    header h1 { font-size: 1rem !important; }
+}
+/* Добавь это в конец public/index.css */
+iframe[id^="IO_"], 
+iframe[src*="firebase"] {
+    display: none !important;
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+    height: 0 !important;
+    width: 0 !important;
+}
+/* Десктоп-версия (1024px и больше) */
+@media (min-width: 1024px) {
+    /* Меняем структуру плеера на сетку */
+    .player-grid {
+        display: grid !important; 
+        grid-template-columns: 320px 1fr; /* Слева 320px, остальное контент */
+    }
+
+    /* Приклеиваем сайдбар на место */
+    aside#player-sidebar {
+        position: static !important; /* Убираем fixed */
+        left: 0 !important;
+        transform: none !important;
+        display: block !important;
+        height: 100% !important; /* Занимает высоту своего блока */
+        border-right: 1px solid var(--aura-border-light);
+        box-shadow: none !important;
+    }
+    
+    .dark aside#player-sidebar {
+        border-right-color: var(--aura-border-dark);
     }
 }
