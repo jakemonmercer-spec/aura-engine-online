@@ -308,3 +308,35 @@ img, video {
         linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }
+
+/* --- ЛОГИКА МОБИЛЬНОГО МЕНЮ --- */
+@media (max-width: 1024px) {
+    aside#player-sidebar {
+        position: fixed !important; /* Вырываем из потока */
+        top: 0;
+        left: 0;
+        width: 90% !important; /* Занимает 90% экрана */
+        height: 100vh !important;
+        z-index: 9999; /* Поверх всего */
+        transform: translateX(-100%); /* Спрятан слева */
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        background: #ffffff; /* Белый фон (в светлой теме) */
+        display: block !important;
+    }
+
+    /* Темная тема для меню */
+    .dark aside#player-sidebar {
+        background: #0f172a !important;
+    }
+
+    /* Состояние "Открыто" */
+    aside#player-sidebar.active {
+        transform: translateX(0); /* Выезжает на экран */
+        box-shadow: 0 0 100px rgba(0,0,0,0.5);
+    }
+
+    /* Исправляем основной контент, чтобы он не сжимался под меню */
+    .player-grid {
+        display: block !important; /* Убираем грид на мобилках */
+    }
+}
