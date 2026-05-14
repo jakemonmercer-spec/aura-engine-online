@@ -134,9 +134,9 @@ aside#player-sidebar.active {
     width: 100% !important;
     height: 100%;
     padding: 1.5rem;
+    padding-bottom: 150px !important; /* Увеличили отступ, чтобы футер не мешал */
     overflow-y: auto;
     background: var(--aura-bg-light);
-      padding-bottom: 120px; 
 }
 
 .dark #content-container {
@@ -271,11 +271,44 @@ header p {
 }
 
 /* Адаптация под маленькие экраны (320px) */
+/* --- ГЛОБАЛЬНЫЙ ФИКС ДЛЯ МАЛЕНЬКИХ ТЕЛЕФОНОВ --- */
 @media (max-width: 480px) {
+    /* 1. Хедер (ужимаем максимально) */
     header.glass-nav, header.glass-header {
-        padding: 0 0.75rem;
-        height: 4.5rem !important; /* На мобилке чуть ниже - 72px */
+        height: 3.5rem !important; /* 56px вместо 80px */
+        padding: 0 0.5rem !important;
     }
+
+    /* 2. Контент плеера */
+    #content-container {
+        padding: 10px !important;
+        height: calc(100dvh - 7rem) !important; /* dVh учитывает панель браузера */
+    }
+
+    /* 3. Шторка (Drawer) на 100% ширины на мелких телах */
+    aside#player-sidebar {
+        width: 100% !important;
+        left: -100% !important;
+    }
+
+    /* 4. Футер плеера (делаем его тоньше) */
+    footer.h-20 {
+        height: 4rem !important;
+        padding: 0 10px !important;
+    }
+
+    #complete-btn {
+        padding: 10px 15px !important;
+        font-size: 9px !important;
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* 5. Убираем лишние элементы в шапке, чтобы не теснились */
+    header h2#player-course-title {
+        font-size: 10px !important;
+    }
+}
     
     header .hidden.sm\:block, 
     header .hidden.md\:block {
@@ -283,7 +316,7 @@ header p {
     }
 
     header h1 { font-size: 1rem !important; }
-}
+
 /* Добавь это в конец public/index.css */
 iframe[id^="IO_"], 
 iframe[src*="firebase"] {
