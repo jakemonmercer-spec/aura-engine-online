@@ -17,6 +17,7 @@
 // ВРЕМЕННО: Для тестов в VS Code заставляем прогу думать, что она в облаке
 const IS_ONLINE = true;
 
+let isFavOnly = false;
 let aiChatHistory = []; // Память чата
 let allCourses = [];      
 let marketCourses = [];   
@@ -189,8 +190,8 @@ const AuraSocial = {
 };
 
 
-// Настройка ИИ для работы ПРЯМО в браузере (без сервера)
-const GEMINI_KEY = "AIzaSyA_YEzJheln4D_mgy9u5kFMRPSxKdCBstQ"; // Твой ключ
+ 
+const GEMINI_KEY = "AIzaSyDAgZzEDV5YqSU3komZ4llpQ6Rf2nHr-e4";
 
 async function callGeminiDirect(message, context) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_KEY}`;
@@ -285,6 +286,7 @@ function getYoutubeId(url) {
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
+// Теперь внутри case 'video':
 // Теперь внутри case 'video':
 case 'video':
     const videoId = getYoutubeId(b.data.url);
@@ -476,11 +478,13 @@ function renderMarketGrid(courses) {
 document.addEventListener('input', (e) => {
     if (e.target.id === 'course-search') {
         const query = e.target.value.toLowerCase();
-        const filtered = marketCourses.filter(c => 
-            c.title.toLowerCase().includes(query) || 
-            c.author.toLowerCase().includes(query)
-        );
-        renderMarketGrid(filtered);
+        if (activeTab === 'library') {
+            const filtered = allCourses.filter(c => c.title.toLowerCase().includes(query));
+            renderLibraryGrid(filtered);
+        } else {
+            const filtered = marketCourses.filter(c => c.title.toLowerCase().includes(query));
+            renderMarketGrid(filtered);
+        }
     }
 });
 
@@ -589,6 +593,9 @@ function updatePlayerUI() {
         console.error("❌ Кнопка #complete-btn не найдена в DOM!");
         return;
     }
+
+ btn.classList.remove('hidden');
+    btn.style.display = "flex"; 
 
     const isDone = currentCourse.completedLessons && currentCourse.completedLessons.includes(currentLessonId);
     const hasQuiz = (currentQuiz && currentQuiz.length > 0);
@@ -885,7 +892,7 @@ window.toggleFavorite = toggleFavorite;
 
 // --- ТОЧЕЧНАЯ ПРАВКА: Фильтр Избранного ---
 // --- ТОЧЕЧНОЕ ИСПРАВЛЕНИЕ: Живой фильтр избранного ---
-let isFavOnly = false;
+
 function toggleFavFilter() {
     isFavOnly = !isFavOnly;
     const btn = document.getElementById('fav-filter-btn');
