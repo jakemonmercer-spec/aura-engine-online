@@ -302,3 +302,27 @@ img, video, iframe {
     margin-top: 1rem !important;
     margin-bottom: 1rem !important;
 }
+
+/* --- ФИКС LEGO-БЛОКОВ ДЛЯ МОБИЛОК --- */
+@media (max-width: 480px) {
+    .aura-content-body {
+        padding: 15px !important; /* Убираем гигантские паддинги */
+    }
+
+    h1, .aura-content-body h1 {
+        font-size: 1.5rem !important; /* Уменьшаем заголовок */
+        padding: 10px !important;
+        margin-bottom: 15px !important;
+        word-break: break-all; /* Не дает длинным словам ломать экран */
+    }
+
+    .glass-card {
+        padding: 20px !important;
+        border-radius: 20px !important;
+    }
+
+    /* Видео на мобилках */
+    .max-w-4xl {
+        margin-bottom: 20px !important;
+    }
+}
