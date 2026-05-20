@@ -340,3 +340,30 @@ img, video {
         display: block !important; /* Убираем грид на мобилках */
     }
 }
+
+/* --- ДОПОЛНИТЕЛЬНЫЕ КОСМЕТИЧЕСКИЕ ИСПРАВЛЕНИЯ ДЛЯ УЗКИХ ЭКРАНОВ --- */
+@media (max-width: 480px) {
+    /* Делаем заголовки на карточках курсов более компактными */
+    .course-card h3 {
+        font-size: 1.25rem !important;
+        letter-spacing: -0.5px;
+    }
+    
+    /* Оптимизируем отступы для кнопок в футере */
+    footer.glass-nav {
+        gap: 0.5rem !important;
+        padding: 0.75rem !important;
+    }
+
+    /* Уменьшаем отступы стеклянных карточек, чтобы контент не зажимался по бокам */
+    .glass-card {
+        padding: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* Делаем шрифты для ИИ-ассистента более читаемыми на экранах 320px-375px */
+    #ai-chat .chat-bubble-ai {
+        font-size: 12px !important;
+        line-height: 1.5;
+    }
+}
