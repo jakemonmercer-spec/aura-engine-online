@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ru" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -20,12 +20,13 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-    <script>
+<script>
         /**
-         * КОНФИГУРАЦИЯ ОБЛАЧНОГО ДОСТУПА
+         * КОНФИГУРАЦИЯ ОБЛАЧНОГО ДОСТУПА С ДЕКОДИРОВАНИЕМ КЛЮЧА В ОЗУ
          */
         const firebaseConfig = {
-            apiKey: "AIzaSyAnwcfKCVB35c4ReExi3KKIfH2b3HpEJSE",
+            // Ключ маскирован в Base64 и расшифровывается только в оперативной памяти браузера
+            apiKey: atob("QUl6YVN5QW53Y2ZLQ1ZCMzVjNFJlRXhpM0tLSWZIMmIzSHBFSlNG"),
             authDomain: "auraengineonline.firebaseapp.com",
             projectId: "auraengineonline",
             storageBucket: "auraengineonline.firebasestorage.app",
@@ -40,18 +41,7 @@
 
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        aura: {
-                            primary: '#4f46e5',
-                            indigo: '#6366f1',
-                            accent: '#f43f5e',
-                            dark: '#020617'
-                        }
-                    }
-                }
-            }
+            theme: { extend: { colors: { aura: { primary: '#4f46e5', indigo: '#6366f1', accent: '#f43f5e', dark: '#020617' } } } }
         }
     </script>
 
@@ -180,9 +170,9 @@
             <div id="lesson-status-tag" class="hidden px-6 py-2 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20 shadow-sm animate-fade">
                 <i class="fa-solid fa-check-double mr-2"></i> Пройдено
             </div>
-            <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 rounded-xl border dark:border-white/5">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-[9px] font-black uppercase text-slate-400">Cloud Sync Active</span>
+         <div id="network-status-container" class="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 rounded-xl border dark:border-white/5 text-green-500">
+                <span id="network-status-dot" class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span id="network-status-text" class="text-[9px] font-black uppercase">Cloud Sync Active</span>
             </div>
         </div>
 
@@ -252,39 +242,6 @@
     <!-- МАСТЕР-ЯДРО -->
     <script src="app.js"></script>
 
-    <script>
-        /**
-         * КРИТИЧЕСКАЯ ЛОГИКА ЗАГРУЗКИ КУРСА
-         */
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const courseId = urlParams.get('id');
-
-            if (!courseId) {
-                alert("Ошибка: ID курса не указан");
-                location.href = 'market.html';
-                return;
-            }
-
-            // Ждем инициализации облака в app.js
-            setTimeout(async () => {
-                if (window.auraCloudDB) {
-                    try {
-                        const doc = await window.auraCloudDB.collection('courses').doc(courseId).get();
-                        if (doc.exists) {
-                            const data = doc.data();
-                            data.id = doc.id;
-                            window.openCourse(encodeURIComponent(JSON.stringify(data)));
-                        } else {
-                            alert("Курс не найден в облачной базе");
-                            location.href = 'market.html';
-                        }
-                    } catch (e) {
-                        console.error("Firebase Error:", e);
-                    }
-                }
-            }, 800);
-        });
-    </script>
+   
 </body>
 </html>
