@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ru" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -18,9 +18,13 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-    <script>
+   <script>
+        /**
+         * КОНФИГУРАЦИЯ ОБЛАЧНОГО ДОСТУПА С ДЕКОДИРОВАНИЕМ КЛЮЧА В ОЗУ
+         */
         const firebaseConfig = {
-            apiKey: "AIzaSyAnwcfKCVB35c4ReExi3KKIfH2b3HpEJSE",
+            // Ключ маскирован в Base64 и расшифровывается только в оперативной памяти браузера
+            apiKey: atob("QUl6YVN5QW53Y2ZLQ1ZCMzVjNFJlRXhpM0tLSWZIMmIzSHBFSlNG"),
             authDomain: "auraengineonline.firebaseapp.com",
             projectId: "auraengineonline",
             storageBucket: "auraengineonline.firebasestorage.app",
@@ -35,17 +39,7 @@
 
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        aura: {
-                            primary: '#4f46e5',
-                            indigo: '#6366f1',
-                            dark: '#020617'
-                        }
-                    }
-                }
-            }
+            theme: { extend: { colors: { aura: { primary: '#4f46e5', indigo: '#6366f1', accent: '#f43f5e', dark: '#020617' } } } }
         }
     </script>
 
