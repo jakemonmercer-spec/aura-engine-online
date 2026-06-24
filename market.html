@@ -19,29 +19,34 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
    <script>
-        /**
-         * КОНФИГУРАЦИЯ ОБЛАЧНОГО ДОСТУПА С ДЕКОДИРОВАНИЕМ КЛЮЧА В ОЗУ
-         */
-        const firebaseConfig = {
-            // Ключ маскирован в Base64 и расшифровывается только в оперативной памяти браузера
-            apiKey: atob("QUl6YVN5QW53Y2ZLQ1ZCMzVjNFJlRXhpM0tLSWZIMmIzSHBFSlNG"),
-            authDomain: "auraengineonline.firebaseapp.com",
-            projectId: "auraengineonline",
-            storageBucket: "auraengineonline.firebasestorage.app",
-            messagingSenderId: "433967688454",
-            appId: "1:433967688454:web:61011b44105de083d68c87",
-            measurementId: "G-4C30YKM8ZF"
-        };
+    /**
+     * КОНФИГУРАЦИЯ ОБЛАЧНОГО ДОСТУПА.
+     * Ключ API указан в открытом виде, без дополнительной маскировки.
+     */
+    const firebaseConfig = {
+        // Убедитесь, что этот ключ актуален и получен из консоли Firebase
+        apiKey: "AIzaSyAnwcfKCVB35c4ReExi3KKIfH2b3HpEJSE", 
+        authDomain: "auraengineonline.firebaseapp.com",
+        projectId: "auraengineonline",
+        storageBucket: "auraengineonline.firebasestorage.app",
+        messagingSenderId: "433967688454",
+        appId: "1:433967688454:web:61011b44105de083d68c87",
+        measurementId: "G-4C30YKM8ZF"
+    };
 
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        window.auraCloudDB = firebase.firestore();
-        window.firebase = firebase;
+    // Инициализация Firebase, если она еще не была инициализирована
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    
+    // Глобальные переменные для доступа к Firestore и Firebase
+    window.auraCloudDB = firebase.firestore();
+    window.firebase = firebase;
 
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { colors: { aura: { primary: '#4f46e5', indigo: '#6366f1', accent: '#f43f5e', dark: '#020617' } } } }
-        }
-    </script>
+    // Конфигурация Tailwind CSS
+    tailwind.config = {
+        darkMode: 'class',
+        theme: { extend: { colors: { aura: { primary: '#4f46e5', indigo: '#6366f1', accent: '#f43f5e', dark: '#020617' } } } }
+    }
+</script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;700;900&display=swap');
