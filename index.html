@@ -26,15 +26,18 @@
      * Ключ API указан в открытом виде, без дополнительной маскировки.
      */
     const firebaseConfig = {
-        // Убедитесь, что этот ключ актуален и получен из консоли Firebase
-        apiKey: "AIzaSyAnwcfKCVB35c4ReExi3KKIfH2b3HpEJSE", 
-        authDomain: "auraengineonline.firebaseapp.com",
-        projectId: "auraengineonline",
-        storageBucket: "auraengineonline.firebasestorage.app",
-        messagingSenderId: "433967688454",
-        appId: "1:433967688454:web:61011b44105de083d68c87",
-        measurementId: "G-4C30YKM8ZF"
-    };
+  apiKey: "AIzaSyAnwcfKCVB35c4ReExi3KKIfH2b3HpEJSE",
+  authDomain: "auraengineonline.firebaseapp.com",
+  projectId: "auraengineonline",
+  storageBucket: "auraengineonline.firebasestorage.app",
+  messagingSenderId: "433967688454",
+  appId: "1:433967688454:web:61011b44105de083d68c87",
+  measurementId: "G-4C30YKM8ZF"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
     // Инициализация Firebase, если она еще не была инициализирована
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
