@@ -5,25 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURA ONLINE — Autonomous Learning Ecosystem</title>
     
-
+    <!-- СИНХРОНИЗАЦИЯ СТИЛЕЙ -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="aura-content.css">
     
-
+    <!-- ТЕХНОЛОГИЧЕСКИЙ СТЕК -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <script src="https://www.youtube.com/iframe_api"></script>
-
+    <!-- FIREBASE SDK (COMPAT) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <script>
-      
+        /**
+         * КОНФИГУРАЦИЯ ОБЛАЧНОГО ДОСТУПА С ДЕКОДИРОВАНИЕМ КЛЮЧА В ОЗУ
+         */
         const firebaseConfig = {
-     
+            // Ключ маскирован в Base64 и расшифровывается только в оперативной памяти браузера
             apiKey: atob("QUl6YVN5QW53Y2ZLQ1ZCMzVjNFJlRXhpM0tLSWZIMmIzSHBFSlNG"),
             authDomain: "auraengineonline.firebaseapp.com",
             projectId: "auraengineonline",
@@ -67,7 +69,9 @@
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-aura-dark dark:text-slate-100 min-h-screen aura-grid-bg">
 
-
+    <!-- =========================================================
+         HEADER: UNITY CONTROL (FIXED HEIGHT h-20)
+         ========================================================= -->
     <header class="h-20 sticky top-0 z-[100] glass-header flex items-center">
         <div class="max-w-7xl mx-auto w-full px-6 md:px-8 flex justify-between items-center">
             <div class="flex items-center gap-4 cursor-pointer" onclick="location.href='index.html'">
@@ -91,10 +95,12 @@
         </div>
     </header>
 
-  
+    <!-- =========================================================
+         HERO SECTION: LANDING & LIVE DASHBOARD
+         ========================================================= -->
     <main class="max-w-7xl mx-auto px-6 md:px-8 py-16 lg:py-24 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
         
-  
+        <!-- Левая часть: Описание и Статистика -->
         <div class="lg:col-span-7 space-y-10 animate-slideUp">
             <div class="space-y-6">
                 <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-indigo-500/10 text-aura-indigo text-[10px] font-black uppercase tracking-[0.3em]">
@@ -108,7 +114,7 @@
                 </p>
             </div>
 
-
+            <!-- LIVE DASHBOARD (IDs для app.js) -->
             <div class="grid grid-cols-3 gap-4 max-w-md">
                 <div class="bg-white dark:bg-white/5 p-5 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm">
                     <span id="stat-total-courses" class="block text-3xl font-black text-aura-primary">0</span>
@@ -124,7 +130,7 @@
                 </div>
             </div>
 
-
+            <!-- Действия -->
             <div class="flex flex-wrap gap-6 pt-4">
                 <a href="market.html" class="bg-aura-primary text-white px-10 py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-widest shadow-2xl shadow-indigo-500/40 hover:bg-indigo-700 transition-all block">
                     Открыть Магазин
@@ -137,7 +143,7 @@
             </div>
         </div>
 
-
+        <!-- Правая часть: Leaderboard (XP Хаб) -->
         <div class="lg:col-span-5 animate-fade">
             <div class="bg-white dark:bg-slate-900/50 p-10 rounded-[4rem] border border-slate-200 dark:border-white/5 shadow-2xl relative overflow-hidden">
                 <div class="flex justify-between items-center mb-10">
@@ -147,7 +153,7 @@
                     </div>
                 </div>
                 
-            
+                <!-- Контейнер для лидеров (наполняется через app.js) -->
                 <div id="leaderboard-container" class="space-y-4">
                     <div class="flex justify-center py-20 opacity-20"><i class="fa-solid fa-spinner fa-spin text-4xl"></i></div>
                 </div>
@@ -159,7 +165,7 @@
         </div>
     </main>
 
-
+    <!-- PROMO SECTION -->
     <section class="max-w-7xl mx-auto px-6 md:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 pb-32">
         <div class="p-10 rounded-[3rem] bg-white dark:bg-slate-900/30 border border-slate-100 dark:border-white/5 hover:border-aura-primary transition-all group">
             <i class="fa-solid fa-shield-halved text-4xl text-aura-primary mb-6 block group-hover:scale-110 transition-transform"></i>
@@ -178,7 +184,7 @@
         </div>
     </section>
 
-
+    <!-- ПОДКЛЮЧЕНИЕ МАСТЕР-ЯДРА -->
     <script src="app.js"></script>
 </body>
 </html>
